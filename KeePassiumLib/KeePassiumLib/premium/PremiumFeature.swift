@@ -57,21 +57,7 @@ public enum PremiumFeature: Int {
     case canCreateEntriesInAutoFill = 14
 
     public func isAvailable(in status: PremiumManager.Status, fallbackDate: Date?) -> Bool {
-        let isEntitled = status == .subscribed ||
-            status == .lapsed ||
-            wasAvailable(before: fallbackDate)
-
-        switch self {
-        case .canUseMultipleDatabases,
-             .canUseHardwareKeys,
-             .canRelocateAcrossDatabases,
-             .canUseQuickTypeAutoFill,
-             .canUseBusinessClouds,
-             .canAuditPasswords,
-             .canOpenLinkedDatabases,
-             .canCreateEntriesInAutoFill:
-            return isEntitled
-        }
+            return true
     }
 
     private func wasAvailable(before fallbackDate: Date?) -> Bool {
