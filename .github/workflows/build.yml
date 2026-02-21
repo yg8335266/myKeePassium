@@ -1,0 +1,78 @@
+name: Build KeePassium IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          # 列出可用 Xcode 版本并选择
+          ls /Applications/ | grep Xcode
+          sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Build KeePassium (no codesign)
+        run: |
+          xcodebuild build \
+            -workspace KeePassium.xcworkspace \
+            -scheme KeePassium \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath ./build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Install ldid for fakesign
+        run: brew install ldid
+
+      - name: Package IPA for TrollStore
+        run: |
+          # 找到编译产物
+          APP_PATH=$(find ./build -name "KeePassium.app" -path "*/Release-iphoneos/*" -not -path "*/PlugIns/*" | head -1)
+          echo "Found app at: $APP_PATH"
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: Could not find KeePassium.app"
+            find ./build -name "*.app" | head -20
+            exit 1
+          fi
+
+          # Fakesign 所有二进制（TrollStore 需要）
+          find "$APP_PATH" -type f \( -name "KeePassium" -o -name "*.dylib" \) | while read f; do
+            echo "Fakesigning: $f"
+            ldid -S "$f" || true
+          done
+
+          # 处理 AutoFill 扩展
+          if [ -d "$APP_PATH/PlugIns" ]; then
+            find "$APP_PATH/PlugIns" -type f -perm +111 | while read f; do
+              echo "Fakesigning plugin: $f"
+              ldid -S "$f" || true
+            done
+          fi
+
+          # 打包 IPA
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r KeePassium.tipa Payload
+
+          echo "=== Build Complete ==="
+          echo "IPA size: $(du -h KeePassium.tipa | cut -f1)"
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePassium-TrollStore
+          path: KeePassium.tipa
