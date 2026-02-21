@@ -11,65 +11,91 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
+      - name: Setup Xcode
         run: |
-          # 列出可用 Xcode 版本并选择
-          ls /Applications/ | grep Xcode
           sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           xcodebuild -version
 
-      - name: Build KeePassium (no codesign)
+      - name: Patch macOS-only files for iOS build
+        run: |
+          # MacUtilsImpl.swift 使用了 AppKit（仅 macOS），用 #if os(macOS) 包裹整个文件
+          for file in KeePassium/util/macos/MacUtilsImpl.swift; do
+            if [ -f "$file" ]; then
+              echo "Patching $file"
+              sed -i '' '1s/^/#if os(macOS)\n/' "$file"
+              echo -e '\n#endif' >> "$file"
+            fi
+          done
+
+          # 查找其他可能导入 AppKit 的文件
+          echo "=== Files importing AppKit ==="
+          grep -rl "import AppKit" --include="*.swift" . || echo "No more AppKit imports"
+          echo "=== Files importing Carbon ==="
+          grep -rl "import Carbon" --include="*.swift" . || echo "No more Carbon imports"
+
+      - name: Build KeePassium
         run: |
           xcodebuild build \
-            -workspace KeePassium.xcworkspace \
-            -scheme KeePassium \
+            -project KeePassium.xcodeproj \
+            -target KeePassium \
             -sdk iphoneos \
             -configuration Release \
             -derivedDataPath ./build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE_SPECIFIER="" \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            SUPPORTS_MACCATALYST=NO \
+            2>&1 | tee build.log | tail -50
 
-      - name: Install ldid for fakesign
+          # 检查是否成功
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then
+            echo "=== BUILD FAILED - Last 200 lines ==="
+            tail -200 build.log
+            echo "=== Error lines ==="
+            grep -i "error:" build.log | tail -30
+            exit 1
+          fi
+
+      - name: Install ldid
         run: brew install ldid
 
       - name: Package IPA for TrollStore
         run: |
-          # 找到编译产物
           APP_PATH=$(find ./build -name "KeePassium.app" -path "*/Release-iphoneos/*" -not -path "*/PlugIns/*" | head -1)
-          echo "Found app at: $APP_PATH"
 
           if [ -z "$APP_PATH" ]; then
-            echo "ERROR: Could not find KeePassium.app"
+            echo "KeePassium.app not found, listing all .app:"
             find ./build -name "*.app" | head -20
-            exit 1
+            APP_PATH=$(find ./build -name "*.app" -path "*/Release-iphoneos/*" -not -path "*/PlugIns/*" | head -1)
           fi
 
-          # Fakesign 所有二进制（TrollStore 需要）
-          find "$APP_PATH" -type f \( -name "KeePassium" -o -name "*.dylib" \) | while read f; do
-            echo "Fakesigning: $f"
+          echo "App path: $APP_PATH"
+
+          # Fakesign 主二进制
+          APP_NAME=$(basename "$APP_PATH" .app)
+          [ -f "$APP_PATH/$APP_NAME" ] && ldid -S "$APP_PATH/$APP_NAME"
+
+          # Fakesign frameworks
+          find "$APP_PATH/Frameworks" -name "*.dylib" 2>/dev/null | while read f; do
             ldid -S "$f" || true
           done
 
-          # 处理 AutoFill 扩展
-          if [ -d "$APP_PATH/PlugIns" ]; then
-            find "$APP_PATH/PlugIns" -type f -perm +111 | while read f; do
-              echo "Fakesigning plugin: $f"
-              ldid -S "$f" || true
-            done
-          fi
+          # Fakesign 插件
+          find "$APP_PATH/PlugIns" -name "*.appex" 2>/dev/null | while read appex; do
+            pname=$(basename "$appex" .appex)
+            [ -f "$appex/$pname" ] && ldid -S "$appex/$pname" || true
+          done
 
-          # 打包 IPA
+          # 打包
           mkdir -p Payload
           cp -r "$APP_PATH" Payload/
           zip -r KeePassium.tipa Payload
-
-          echo "=== Build Complete ==="
-          echo "IPA size: $(du -h KeePassium.tipa | cut -f1)"
+          echo "Done! Size: $(du -h KeePassium.tipa | cut -f1)"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
