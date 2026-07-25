@@ -12,8 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          repository: keepassium/KeePassium
           ref: 1.53.154
           fetch-depth: 0
+
       - name: Show source version
         run: |
           set -euo pipefail
