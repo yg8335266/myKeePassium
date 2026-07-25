@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: 1.53.154
+          fetch-depth: 0
 
       # #1 Xcode 16+
       - name: Select Xcode 16.4
