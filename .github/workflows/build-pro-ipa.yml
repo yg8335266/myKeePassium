@@ -12,53 +12,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # #1
+      # #1 Xcode 16+
       - name: Select Xcode 16.4
         run: |
           set -euo pipefail
           sudo xcode-select -s /Applications/Xcode_16.4.app
           xcodebuild -version
 
-      # #4
+      # #4 TPInAppReceipt 坏 pin
       - name: Fix Swift package pins
         run: |
           set -euo pipefail
           while IFS= read -r f; do
-            echo "Patching $f"
             sed -i '' 's/6630e3858f0d0a5803cede6f82afeaed5f5de7b6/2f8a1cae6b578423d9941b89a0f07c6cce1e1c22/g' "$f" || true
           done < <(find . -name Package.resolved -print)
-
           if grep -R "6630e3858f0d0a5803cede6f82afeaed5f5de7b6" . --include='Package.resolved' >/dev/null 2>&1; then
-            echo "Bad pin still present, removing Package.resolved"
             find . -name Package.resolved -delete
           fi
 
-      # #6：生成传统 appiconset，满足 app-icon-pro / app-icon
+      # #6 app icon
       - name: Create classic app icon sets
         run: |
           set -euo pipefail
-
           SRC="KeePassium/app-icons"
-          test -d "$SRC"
-
           make_appiconset() {
-            local name="$1"
-            local prefix="$2"
+            local name="$1"; local prefix="$2"
             local out="KeePassium/Assets.xcassets/${name}.appiconset"
             mkdir -p "$out"
-
-            # 用仓库已有 PNG 填充关键尺寸
-            cp "$SRC/${prefix}_iPhoneApp_60@2x.png"        "$out/peter.m@example.com"
-            cp "$SRC/${prefix}_iPhoneApp_60@3x.png"        "$out/alice.j@example.com"
-            cp "$SRC/${prefix}_iPadApp_76.png"             "$out/icon-76.png"
-            cp "$SRC/${prefix}_iPadApp_76@2x.png"          "$out/wendy.h@example.net"
-            cp "$SRC/${prefix}_iPadProApp_83.5@2x.png"     "$out/nathan.k@example.net"
-
-            # 设置页图标若无单独资源，复用 60pt
-            cp "$SRC/${prefix}_iPhoneApp_60@2x.png"        "$out/zoe.m@example.net"
-            cp "$SRC/${prefix}_iPhoneApp_60@3x.png"        "$out/nina.v@example.com"
-            cp "$SRC/${prefix}_iPhoneApp_60@2x.png"        "$out/james.b@example.com"
-
+            cp "$SRC/${prefix}_iPhoneApp_60@2x.png" "$out/peter.m@example.com"
+            cp "$SRC/${prefix}_iPhoneApp_60@3x.png" "$out/alice.j@example.com"
+            cp "$SRC/${prefix}_iPadApp_76.png" "$out/icon-76.png"
+            cp "$SRC/${prefix}_iPadApp_76@2x.png" "$out/wendy.h@example.net"
+            cp "$SRC/${prefix}_iPadProApp_83.5@2x.png" "$out/nathan.k@example.net"
+            cp "$SRC/${prefix}_iPhoneApp_60@2x.png" "$out/zoe.m@example.net"
+            cp "$SRC/${prefix}_iPhoneApp_60@3x.png" "$out/nina.v@example.com"
+            cp "$SRC/${prefix}_iPhoneApp_60@2x.png" "$out/james.b@example.com"
             cat > "$out/Contents.json" <<'EOF'
           {
             "images" : [
@@ -74,70 +62,31 @@ jobs:
             "info" : { "author" : "xcode", "version" : 1 }
           }
           EOF
-
-            echo "Created $out"
-            ls -la "$out"
           }
-
-          # Pro 主图标
           make_appiconset "app-icon-pro" "appicon-classic-pro"
-          # 兜底：免费/其他配置若被拉到也不炸
           make_appiconset "app-icon" "appicon-classic-free"
           make_appiconset "app-icon-emm" "appicon-classic-pro"
-
-          echo "App icon sets in Assets:"
-          ls -la KeePassium/Assets.xcassets | grep app-icon || true
-
-      - name: List projects
-        run: |
-          set -euo pipefail
-          xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -list
-          xcodebuild -project KeePassium.xcodeproj -list
 
       - name: Resolve packages
         run: |
           set -euo pipefail
           rm -rf SourcePackages
           mkdir -p SourcePackages
+          xcodebuild -resolvePackageDependencies -project KeePassiumLib/KeePassiumLib.xcodeproj -clonedSourcePackagesDirPath "$PWD/SourcePackages"
+          xcodebuild -resolvePackageDependencies -project KeePassium.xcodeproj -clonedSourcePackagesDirPath "$PWD/SourcePackages"
 
-          xcodebuild -resolvePackageDependencies \
-            -project KeePassiumLib/KeePassiumLib.xcodeproj \
-            -clonedSourcePackagesDirPath "$PWD/SourcePackages"
-
-          xcodebuild -resolvePackageDependencies \
-            -project KeePassium.xcodeproj \
-            -clonedSourcePackagesDirPath "$PWD/SourcePackages"
-
-          ls -la SourcePackages/checkouts || true
-
-      # #5
+      # #5 YubiKit headers
       - name: Link YubiKit headers path
         run: |
           set -euo pipefail
-
-          YUBI_CHECKOUT=""
-          if [ -d "$PWD/SourcePackages/checkouts/yubikit-ios" ]; then
-            YUBI_CHECKOUT="$PWD/SourcePackages/checkouts/yubikit-ios"
-          else
-            YUBI_CHECKOUT="$(find "$HOME/Library/Developer/Xcode/DerivedData" -type d -path '*/checkouts/yubikit-ios' 2>/dev/null | head -n 1 || true)"
-          fi
-
-          if [ -z "$YUBI_CHECKOUT" ] || [ ! -d "$YUBI_CHECKOUT/YubiKit" ]; then
-            echo "ERROR: yubikit-ios checkout not found"
-            find SourcePackages -maxdepth 4 -type d -print || true
-            exit 1
-          fi
-
-          echo "YubiKit checkout: $YUBI_CHECKOUT"
+          YUBI_CHECKOUT="$PWD/SourcePackages/checkouts/yubikit-ios"
+          test -d "$YUBI_CHECKOUT/YubiKit"
           ln -sfn "$YUBI_CHECKOUT/YubiKit" "$PWD/../YubiKit"
-          ls -la "$PWD/../YubiKit"
-          ls -la "$PWD/../YubiKit/YubiKit/Helpers/Additions/UIDeviceAdditions.h"
 
-      # #2 #3；不要全局覆盖 HEADER_SEARCH_PATHS
+      # #2 #3 build
       - name: Build KeePassiumLib then KeePassium Pro
         run: |
           set -euo pipefail
-
           BUILD_ROOT="$PWD/build"
           rm -rf "$BUILD_ROOT" build.log
           mkdir -p "$BUILD_ROOT"
@@ -155,63 +104,163 @@ jobs:
             BUILD_DIR="$BUILD_ROOT"
           )
 
-          dump_errors() {
-            echo "===== FIRST ERRORS ====="
-            grep -E 'error:|fatal error:' build.log | head -n 120 || true
-            echo "===== LAST 120 LINES ====="
-            tail -n 120 build.log || true
-          }
-
           set +e
-
           echo "===== 1) Build KeePassiumLib ====="
-          xcodebuild \
-            -project KeePassiumLib/KeePassiumLib.xcodeproj \
-            -target KeePassiumLib \
-            "${COMMON[@]}" \
-            build 2>&1 | tee -a build.log
-          STATUS1=${PIPESTATUS[0]}
-          if [ "$STATUS1" -ne 0 ]; then
-            dump_errors
-            exit "$STATUS1"
-          fi
+          xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -target KeePassiumLib "${COMMON[@]}" build 2>&1 | tee -a build.log
+          S1=${PIPESTATUS[0]}
+          if [ "$S1" -ne 0 ]; then grep -E 'error:|fatal error:' build.log | head -n 80; exit "$S1"; fi
 
           echo "===== 2) Build KeePassium Pro ====="
-          xcodebuild \
-            -project KeePassium.xcodeproj \
-            -target "KeePassium Pro" \
-            "${COMMON[@]}" \
+          xcodebuild -project KeePassium.xcodeproj -target "KeePassium Pro" "${COMMON[@]}" \
             FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" \
             ASSETCATALOG_COMPILER_APPICON_NAME=app-icon-pro \
             ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
             build 2>&1 | tee -a build.log
-          STATUS2=${PIPESTATUS[0]}
+          S2=${PIPESTATUS[0]}
           set -e
+          grep -E 'error:|fatal error:' build.log | head -n 80 || true
+          exit "$S2"
 
-          dump_errors
-          echo "===== ARTIFACT SEARCH ====="
-          find "$BUILD_ROOT" -name 'KeePassiumLib.framework' -type d -print || true
-          find "$BUILD_ROOT" -name 'KeePassium Pro.app' -type d -print || true
-          find "$BUILD_ROOT" -name '*.appex' -print || true
-
-          exit "$STATUS2"
-
-      - name: Package IPA
-        if: success()
+      # ★ 修复闪退：写入 entitlements 并 ad-hoc 签名
+      - name: Sign for TrollStore and package IPA
         run: |
           set -euo pipefail
+
           APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
-          if [ -z "$APP_PATH" ]; then
-            echo "ERROR: KeePassium Pro.app not found"
-            find "$PWD/build" -maxdepth 8 -type d -print || true
-            exit 1
+          test -n "$APP_PATH"
+          echo "App: $APP_PATH"
+
+          # 给巨魔用的精简 iOS entitlements（去掉 macOS sandbox 等）
+          cat > app.entitlements <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>application-identifier</key>
+            <string>com.keepassium.ios.pro</string>
+            <key>com.apple.developer.team-identifier</key>
+            <string>TROLL</string>
+            <key>com.apple.developer.authentication-services.autofill-credential-provider</key>
+            <true/>
+            <key>com.apple.developer.default-data-protection</key>
+            <string>NSFileProtectionComplete</string>
+            <key>com.apple.developer.icloud-container-identifiers</key>
+            <array>
+              <string>iCloud.com.keepassium.ios</string>
+            </array>
+            <key>com.apple.developer.icloud-services</key>
+            <array>
+              <string>CloudDocuments</string>
+            </array>
+            <key>com.apple.developer.ubiquity-container-identifiers</key>
+            <array>
+              <string>iCloud.com.keepassium.ios</string>
+            </array>
+            <key>com.apple.developer.nfc.readersession.formats</key>
+            <array>
+              <string>TAG</string>
+            </array>
+            <key>com.apple.security.application-groups</key>
+            <array>
+              <string>group.com.keepassium</string>
+            </array>
+            <key>keychain-access-groups</key>
+            <array>
+              <string>*</string>
+              <string>com.keepassium.SharedItems</string>
+            </array>
+            <key>get-task-allow</key>
+            <true/>
+            <key>platform-application</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          cat > appex.entitlements <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>application-identifier</key>
+            <string>com.keepassium.ios.pro.KeePassium-AutoFill</string>
+            <key>com.apple.developer.team-identifier</key>
+            <string>TROLL</string>
+            <key>com.apple.developer.authentication-services.autofill-credential-provider</key>
+            <true/>
+            <key>com.apple.developer.icloud-container-identifiers</key>
+            <array>
+              <string>iCloud.com.keepassium.ios</string>
+            </array>
+            <key>com.apple.developer.icloud-services</key>
+            <array>
+              <string>CloudDocuments</string>
+            </array>
+            <key>com.apple.developer.ubiquity-container-identifiers</key>
+            <array>
+              <string>iCloud.com.keepassium.ios</string>
+            </array>
+            <key>com.apple.security.application-groups</key>
+            <array>
+              <string>group.com.keepassium</string>
+            </array>
+            <key>keychain-access-groups</key>
+            <array>
+              <string>*</string>
+              <string>com.keepassium.SharedItems</string>
+            </array>
+            <key>get-task-allow</key>
+            <true/>
+            <key>platform-application</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          # 深度签名：framework -> appex -> app
+          sign_one() {
+            local path="$1"
+            local ent="$2"
+            echo "Signing: $path"
+            codesign --force --sign - --entitlements "$ent" --timestamp=none "$path"
+            codesign -d --entitlements :- "$path" | head -n 80 || true
+          }
+
+          # framework
+          if [ -d "$APP_PATH/Frameworks/KeePassiumLib.framework" ]; then
+            sign_one "$APP_PATH/Frameworks/KeePassiumLib.framework" app.entitlements
           fi
 
-          echo "Found app: $APP_PATH"
-          ls -la "$APP_PATH"
-          ls -la "$APP_PATH/PlugIns" || true
-          ls -la "$APP_PATH/Frameworks" || true
+          # any other frameworks
+          if [ -d "$APP_PATH/Frameworks" ]; then
+            find "$APP_PATH/Frameworks" -name '*.framework' -maxdepth 1 | while read -r fw; do
+              sign_one "$fw" app.entitlements
+            done
+          fi
 
+          # AutoFill extension
+          if [ -d "$APP_PATH/PlugIns" ]; then
+            find "$APP_PATH/PlugIns" -name '*.appex' -maxdepth 1 | while read -r appex; do
+              # sign appex binary container
+              if [ -d "$appex/Frameworks" ]; then
+                find "$appex/Frameworks" -name '*.framework' -maxdepth 1 | while read -r fw; do
+                  sign_one "$fw" appex.entitlements
+                done
+              fi
+              sign_one "$appex" appex.entitlements
+            done
+          fi
+
+          # main app last
+          sign_one "$APP_PATH" app.entitlements
+
+          echo "===== APP STRUCTURE ====="
+          ls -lah "$APP_PATH"
+          ls -lah "$APP_PATH/PlugIns" || true
+          ls -lah "$APP_PATH/Frameworks" || true
+          du -sh "$APP_PATH"
+
+          # 打包
           STAGE="$PWD/ipa_stage"
           rm -rf "$STAGE"
           mkdir -p "$STAGE/Payload"
@@ -221,10 +270,14 @@ jobs:
           rm -f "$OUT"
           (cd "$STAGE" && zip -qry "$OUT" Payload)
           ls -lh "$OUT"
-          unzip -l "$OUT" | head -n 120
+          unzip -l "$OUT" | head -n 100
+
+          # 基本完整性检查
+          unzip -l "$OUT" | grep -q 'KeePassium Pro.app/KeePassium Pro'
+          unzip -l "$OUT" | grep -q 'KeePassium Pro AutoFill.appex' || echo "WARN: AutoFill missing"
+          unzip -l "$OUT" | grep -q 'KeePassiumLib.framework' || echo "WARN: KeePassiumLib missing"
 
       - name: Upload IPA
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: KeePassium-Pro-IPA
