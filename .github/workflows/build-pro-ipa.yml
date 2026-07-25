@@ -1,58 +1,35 @@
+name: Build KeePassium Pro IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.4.app
+          xcodebuild -version
+          ls /Applications | grep -i xcode
+
+      - name: List project
+        run: |
+          xcodebuild -project KeePassium.xcodeproj -list
+
       - name: Resolve packages
         run: |
           xcodebuild -resolvePackageDependencies -project KeePassium.xcodeproj
 
-      - name: Create Pro scheme
-        run: |
-          set -euo pipefail
-          mkdir -p "KeePassium.xcodeproj/xcshareddata/xcschemes"
-          cat > "KeePassium.xcodeproj/xcshareddata/xcschemes/KeePassium Pro.xcscheme" <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <Scheme LastUpgradeVersion = "1640" version = "1.7">
-             <BuildAction parallelizeBuildables = "YES" buildImplicitDependencies = "YES">
-                <BuildActionEntries>
-                   <BuildActionEntry buildForTesting = "YES" buildForRunning = "YES" buildForProfiling = "YES" buildForArchiving = "YES" buildForAnalyzing = "YES">
-                      <BuildableReference
-                         BuildableIdentifier = "primary"
-                         BlueprintIdentifier = "REPLACE_PRO_ID"
-                         BuildableName = "KeePassium Pro.app"
-                         BlueprintName = "KeePassium Pro"
-                         ReferencedContainer = "container:KeePassium.xcodeproj">
-                      </BuildableReference>
-                   </BuildActionEntry>
-                </BuildActionEntries>
-             </BuildAction>
-             <LaunchAction buildConfiguration = "Release" selectedDebuggerIdentifier = "" selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn" launchStyle = "0" useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" debugServiceExtension = "internal" allowLocationSimulation = "YES">
-                <BuildableProductRunnable runnableDebuggingMode = "0">
-                   <BuildableReference
-                      BuildableIdentifier = "primary"
-                      BlueprintIdentifier = "REPLACE_PRO_ID"
-                      BuildableName = "KeePassium Pro.app"
-                      BlueprintName = "KeePassium Pro"
-                      ReferencedContainer = "container:KeePassium.xcodeproj">
-                   </BuildableReference>
-                </BuildableProductRunnable>
-             </LaunchAction>
-          </Scheme>
-          EOF
-
-          PRO_ID="$(
-            python3 - <<'PY'
-          import re
-          t=open("KeePassium.xcodeproj/project.pbxproj",encoding="utf-8",errors="ignore").read()
-          m=re.search(r'([A-F0-9]{24})\s*/\*\s*KeePassium Pro\s*\*/\s*=\s*\{\s*isa = PBXNativeTarget;', t)
--F0-9]{24})\s*/\*\s*KeePassium Pro\s*\*/\s*=\s*\{[^}]*?isa = PBXNativeTarget;', t, re.S)
-          if not m:
-              raise SystemExit("cannot find KeePassium Pro target id")
-          print(m.group(1))
-          PY
-          )"
-          echo "Pro target id: $PRO_ID"
-          sed -i '' "s/REPLACE_PRO_ID/${PRO_ID}/g" "KeePassium.xcodeproj/xcshareddata/xcschemes/KeePassium Pro.xcscheme"
-
       - name: Build KeePassium Pro
         run: |
           set -euo pipefail
+
           BUILD_ROOT="$PWD/build"
           rm -rf "$BUILD_ROOT" build.log
           mkdir -p "$BUILD_ROOT"
@@ -60,26 +37,62 @@
           set +e
           xcodebuild \
             -project KeePassium.xcodeproj \
-            -scheme "KeePassium Pro" \
+            -target "KeePassium Pro" \
             -configuration Release \
             -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            -derivedDataPath "$BUILD_ROOT" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
             ONLY_ACTIVE_ARCH=NO \
+            SYMROOT="$BUILD_ROOT" \
             build 2>&1 | tee build.log
           STATUS=${PIPESTATUS[0]}
           set -e
 
           echo "===== FIRST ERRORS ====="
-          grep -E 'error:|fatal error:|❌' build.log | head -n 80 || true
-          echo "===== LAST 80 LINES ====="
-          tail -n 80 build.log || true
+          grep -E 'error:|fatal error:' build.log | head -n 100 || true
+
+          echo "===== LAST 100 LINES ====="
+          tail -n 100 build.log || true
 
           exit $STATUS
+
+      - name: Package IPA
+        if: success()
+        run: |
+          set -euo pipefail
+
+          APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: KeePassium Pro.app not found"
+            find "$PWD/build" -maxdepth 6 -type d -print || true
+            exit 1
+          fi
+
+          echo "Found app: $APP_PATH"
+          ls -la "$APP_PATH"
+          ls -la "$APP_PATH/PlugIns" || true
+
+          STAGE="$PWD/ipa_stage"
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/Payload"
+          cp -R "$APP_PATH" "$STAGE/Payload/"
+
+          OUT="$PWD/KeePassium-Pro.ipa"
+          rm -f "$OUT"
+          (cd "$STAGE" && zip -qry "$OUT" Payload)
+
+          ls -lh "$OUT"
+          unzip -l "$OUT" | head -n 80
+
+      - name: Upload IPA
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePassium-Pro-IPA
+          path: KeePassium-Pro.ipa
+          if-no-files-found: error
 
       - name: Upload build log
         if: failure()
@@ -87,3 +100,4 @@
         with:
           name: build-log
           path: build.log
+          if-no-files-found: warn
