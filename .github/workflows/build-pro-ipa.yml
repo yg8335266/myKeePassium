@@ -1,0 +1,81 @@
+name: Build KeePassium Pro IPA
+
+on:
+  workflow_dispatch:   # 网页上手动点 Run
+  # push:
+  #   branches: [ master ]
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode
+        run: |
+          xcodebuild -version
+          xcodebuild -project KeePassium.xcodeproj -list
+
+      - name: Build KeePassium Pro (no signing)
+        run: |
+          set -euo pipefail
+
+          DERIVED="$PWD/build"
+          mkdir -p "$DERIVED"
+
+          # 不签名构建；巨魔安装不依赖苹果开发者证书
+          xcodebuild \
+            -project KeePassium.xcodeproj \
+            -target "KeePassium Pro" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath "$DERIVED" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+
+      - name: Package IPA
+        run: |
+          set -euo pipefail
+
+          DERIVED="$PWD/build"
+          APP_PATH="$(find "$DERIVED/Build/Products" -type d -name 'KeePassium Pro.app' | head -n 1)"
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: KeePassium Pro.app not found"
+            find "$DERIVED/Build/Products" -maxdepth 4 -type d -print || true
+            exit 1
+          fi
+
+          echo "Found app: $APP_PATH"
+          ls -la "$APP_PATH"
+          ls -la "$APP_PATH/PlugIns" || true
+
+          # 标准 IPA 结构：Payload/*.app
+          STAGE="$PWD/ipa_stage"
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE/Payload"
+          cp -R "$APP_PATH" "$STAGE/Payload/"
+
+          OUT="$PWD/KeePassium-Pro.ipa"
+          rm -f "$OUT"
+          (
+            cd "$STAGE"
+            zip -qry "$OUT" Payload
+          )
+
+          ls -lh "$OUT"
+          unzip -l "$OUT" | head -n 50
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeePassium-Pro-IPA
+          path: KeePassium-Pro.ipa
+          if-no-files-found: error
