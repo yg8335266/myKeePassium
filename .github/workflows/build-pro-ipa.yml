@@ -14,6 +14,15 @@ jobs:
         with:
           ref: 1.53.154
           fetch-depth: 0
+      - name: Show source version
+        run: |
+          set -euo pipefail
+          echo "Current commit:"
+          git rev-parse --short HEAD
+          echo "Current describe:"
+          git describe --tags --always
+          echo "Expected tag: 1.53.154"
+          git describe --tags --exact-match HEAD
 
       # #1 Xcode 16+
       - name: Select Xcode 16.4
