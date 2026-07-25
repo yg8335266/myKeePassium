@@ -16,11 +16,12 @@ jobs:
         run: |
           sudo xcode-select -s /Applications/Xcode_16.4.app
           xcodebuild -version
-          ls /Applications | grep -i xcode
 
-      - name: List project
+      - name: List projects
         run: |
+          xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -list
           xcodebuild -project KeePassium.xcodeproj -list
+          xcodebuild -workspace KeePassium.xcworkspace -list || true
 
       - name: Resolve packages
         run: |
@@ -34,45 +35,67 @@ jobs:
           rm -rf "$BUILD_ROOT" build.log
           mkdir -p "$BUILD_ROOT"
 
+          COMMON=(
+            -configuration Release
+            -sdk iphoneos
+            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGN_IDENTITY=
+            DEVELOPMENT_TEAM=
+            ONLY_ACTIVE_ARCH=NO
+            SYMROOT="$BUILD_ROOT"
+          )
+
           set +e
+
+          echo "===== 1) Build KeePassiumLib ====="
+          xcodebuild \
+            -project KeePassiumLib/KeePassiumLib.xcodeproj \
+            -target KeePassiumLib \
+            "${COMMON[@]}" \
+            build 2>&1 | tee -a build.log
+          STATUS1=${PIPESTATUS[0]}
+
+          if [ "$STATUS1" -ne 0 ]; then
+            echo "===== FIRST ERRORS (Lib) ====="
+            grep -E 'error:|fatal error:' build.log | head -n 100 || true
+            tail -n 100 build.log || true
+            exit "$STATUS1"
+          fi
+
+          echo "===== 2) Build KeePassium Pro ====="
           xcodebuild \
             -project KeePassium.xcodeproj \
             -target "KeePassium Pro" \
-            -configuration Release \
-            -sdk iphoneos \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM="" \
-            ONLY_ACTIVE_ARCH=NO \
-            SYMROOT="$BUILD_ROOT" \
-            build 2>&1 | tee build.log
-          STATUS=${PIPESTATUS[0]}
+            "${COMMON[@]}" \
+            FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos" \
+            build 2>&1 | tee -a build.log
+          STATUS2=${PIPESTATUS[0]}
           set -e
 
           echo "===== FIRST ERRORS ====="
           grep -E 'error:|fatal error:' build.log | head -n 100 || true
-
           echo "===== LAST 100 LINES ====="
           tail -n 100 build.log || true
+          find "$BUILD_ROOT" -name 'KeePassiumLib.framework' -type d -print || true
+          find "$BUILD_ROOT" -name 'KeePassium Pro.app' -type d -print || true
 
-          exit $STATUS
+          exit "$STATUS2"
 
       - name: Package IPA
         if: success()
         run: |
           set -euo pipefail
-
           APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
           if [ -z "$APP_PATH" ]; then
             echo "ERROR: KeePassium Pro.app not found"
             find "$PWD/build" -maxdepth 6 -type d -print || true
             exit 1
           fi
-
           echo "Found app: $APP_PATH"
           ls -la "$APP_PATH"
           ls -la "$APP_PATH/PlugIns" || true
+          ls -la "$APP_PATH/Frameworks" || true
 
           STAGE="$PWD/ipa_stage"
           rm -rf "$STAGE"
@@ -82,9 +105,8 @@ jobs:
           OUT="$PWD/KeePassium-Pro.ipa"
           rm -f "$OUT"
           (cd "$STAGE" && zip -qry "$OUT" Payload)
-
           ls -lh "$OUT"
-          unzip -l "$OUT" | head -n 80
+          unzip -l "$OUT" | head -n 100
 
       - name: Upload IPA
         if: success()
