@@ -6,28 +6,61 @@ on:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
+      # 规避 #1：工程 format 76 需要 Xcode 16+
+      - name: Select Xcode 16.4
         run: |
+          set -euo pipefail
           sudo xcode-select -s /Applications/Xcode_16.4.app
           xcodebuild -version
+          ls /Applications | grep -i xcode
+
+      # 规避 #4：修掉过期的 Package.resolved pin
+      - name: Fix Swift package pins
+        run: |
+          set -euo pipefail
+
+          echo "Before:"
+          find . -name Package.resolved -print
+
+          # 1) 把已知坏 pin 替换成 keepassium 分支当前可用 commit
+          #    旧: 6630e3858f0d0a5803cede6f82afeaed5f5de7b6
+          #    新: 2f8a1cae6b578423d9941b89a0f07c6cce1e1c22
+          while IFS= read -r f; do
+            echo "Patching $f"
+            sed -i '' 's/6630e3858f0d0a5803cede6f82afeaed5f5de7b6/2f8a1cae6b578423d9941b89a0f07c6cce1e1c22/g' "$f" || true
+          done < <(find . -name Package.resolved -print)
+
+          # 2) 再保险：如果还有坏 pin，直接删 resolved，让 SPM 按 branch 重新解析
+          if grep -R "6630e3858f0d0a5803cede6f82afeaed5f5de7b6" . --include='Package.resolved' >/dev/null 2>&1; then
+            echo "Bad pin still present, removing Package.resolved files"
+            find . -name Package.resolved -delete
+          fi
+
+          echo "After:"
+          find . -name Package.resolved -print || true
+          grep -R "tpinappreceipt\|TPInAppReceipt\|6630e38\|2f8a1ca" . --include='Package.resolved' || true
 
       - name: List projects
         run: |
+          set -euo pipefail
           xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -list
           xcodebuild -project KeePassium.xcodeproj -list
-          xcodebuild -workspace KeePassium.xcworkspace -list || true
 
+      # 规避 #4：分别 resolve，不要只 resolve 一个工程
       - name: Resolve packages
         run: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies -project KeePassiumLib/KeePassiumLib.xcodeproj
           xcodebuild -resolvePackageDependencies -project KeePassium.xcodeproj
 
-      - name: Build KeePassium Pro
+      # 规避 #2 #3：不用 derivedDataPath+target；先 Lib 后 Pro；共用 SYMROOT
+      - name: Build KeePassiumLib then KeePassium Pro
         run: |
           set -euo pipefail
 
@@ -44,7 +77,15 @@ jobs:
             DEVELOPMENT_TEAM=
             ONLY_ACTIVE_ARCH=NO
             SYMROOT="$BUILD_ROOT"
+            BUILD_DIR="$BUILD_ROOT"
           )
+
+          dump_errors() {
+            echo "===== FIRST ERRORS ====="
+            grep -E 'error:|fatal error:' build.log | head -n 120 || true
+            echo "===== LAST 120 LINES ====="
+            tail -n 120 build.log || true
+          }
 
           set +e
 
@@ -57,9 +98,7 @@ jobs:
           STATUS1=${PIPESTATUS[0]}
 
           if [ "$STATUS1" -ne 0 ]; then
-            echo "===== FIRST ERRORS (Lib) ====="
-            grep -E 'error:|fatal error:' build.log | head -n 100 || true
-            tail -n 100 build.log || true
+            dump_errors
             exit "$STATUS1"
           fi
 
@@ -68,17 +107,17 @@ jobs:
             -project KeePassium.xcodeproj \
             -target "KeePassium Pro" \
             "${COMMON[@]}" \
-            FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos" \
+            FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos/**" \
+            HEADER_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos/**" \
             build 2>&1 | tee -a build.log
           STATUS2=${PIPESTATUS[0]}
           set -e
 
-          echo "===== FIRST ERRORS ====="
-          grep -E 'error:|fatal error:' build.log | head -n 100 || true
-          echo "===== LAST 100 LINES ====="
-          tail -n 100 build.log || true
+          dump_errors
+          echo "===== ARTIFACT SEARCH ====="
           find "$BUILD_ROOT" -name 'KeePassiumLib.framework' -type d -print || true
           find "$BUILD_ROOT" -name 'KeePassium Pro.app' -type d -print || true
+          find "$BUILD_ROOT" -name '*.appex' -print || true
 
           exit "$STATUS2"
 
@@ -86,12 +125,14 @@ jobs:
         if: success()
         run: |
           set -euo pipefail
+
           APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
           if [ -z "$APP_PATH" ]; then
             echo "ERROR: KeePassium Pro.app not found"
-            find "$PWD/build" -maxdepth 6 -type d -print || true
+            find "$PWD/build" -maxdepth 8 -type d -print || true
             exit 1
           fi
+
           echo "Found app: $APP_PATH"
           ls -la "$APP_PATH"
           ls -la "$APP_PATH/PlugIns" || true
@@ -105,8 +146,9 @@ jobs:
           OUT="$PWD/KeePassium-Pro.ipa"
           rm -f "$OUT"
           (cd "$STAGE" && zip -qry "$OUT" Payload)
+
           ls -lh "$OUT"
-          unzip -l "$OUT" | head -n 100
+          unzip -l "$OUT" | head -n 120
 
       - name: Upload IPA
         if: success()
@@ -117,7 +159,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload build log
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-log
