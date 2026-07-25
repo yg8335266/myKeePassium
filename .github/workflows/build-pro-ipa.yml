@@ -26,19 +26,51 @@ jobs:
       - name: Create license placeholder
         run: |
           mkdir -p KeePassiumLib/KeePassiumLib/resources/licensing
-          python3 -c "open('KeePassiumLib/KeePassiumLib/resources/licensing/v1-proofs.sha256','wb').close()"
+          python3 -c "open('KeePassiumLib/KeePassiumLib/resources/licensing/256','wb').close()"
           ls -la KeePassiumLib/KeePassiumLib/resources/licensing
+
+      # ★ 关键：先修坏掉的 Package.resolved pin
+      - name: Fix TPInAppReceipt pin
+        run: |
+          set -e
+          echo "Before:"
+          find . -name Package.resolved -print || true
+
+          # 旧坏 commit -> 当前 keepassium 分支 tip
+          OLD=6630e3858f0d0a5803cede6f82afeaed5f5de7b6
+          NEW=2f8a1cae6b578423d9941b89a0f07c6cce1e1c22
+
+          find . -name Package.resolved -print0 | while IFS= read -r -d '' f; do
+            echo "Patching $f"
+            sed -i '' "s/${OLD}/${NEW}/g" "$f"
+          done
+
+          # 如果还残留坏 pin，直接删 resolved，让 SPM 按 branch 重解析
+          if grep -R "$OLD" . --include='Package.resolved' >/dev/null 2>&1; then
+            echo "Bad pin still present, deleting Package.resolved"
+            find . -name Package.resolved -delete
+          fi
+
+          echo "After:"
+          find . -name Package.resolved -print || true
+          grep -R "tpinappreceipt\|TPInAppReceipt\|6630e38\|2f8a1ca" . --include='Package.resolved' || true
 
       - name: Resolve packages
         run: |
+          set -e
           mkdir -p SourcePackages
-          xcodebuild -resolvePackageDependencies -project KeePassiumLib/KeePassiumLib.xcodeproj -clonedSourcePackagesDirPath "$PWD/SourcePackages"
-          xcodebuild -resolvePackageDependencies -project KeePassium.xcodeproj -clonedSourcePackagesDirPath "$PWD/SourcePackages"
-
-      - name: Link YubiKit if present
+          xcodebuild -resolvePackageDependencies \
+            -project KeePassiumLib/KeePassiumLib.xcodeproj \
+            -clonedSourcePackagesDirPath "$PWD/SourcePackages"
+          xcodebuild -resolvePackageDependencies \
+            -project Kee \
+            -clonedSourcePackagesDirPath "$PWD/SourcePackages"
+          ls -la SourcePackages Link YubiKit if present
         run: |
           if [ -d SourcePackages/checkouts/yubikit-ios/YubiKit ]; then
-            ln -sfn "$PWD/SourcePackages/checkouts/yubikit-ios/Y
+            ln -sfn "$PWD/SourcePackages/checkouts/yubikit-ios/YubiKit" "$PWD/../YubiKit"
+            echo "YubiKit linked"
+          else
             echo "YubiKit not found, skip"
           fi
 
@@ -89,9 +121,13 @@ jobs:
           test -n "$APP_PATH"
           echo "App=$APP_PATH"
 
-          cat > app.entitlements << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.>application-identifier</key>
+          python3 - <<'PY'
+          from pathlib import Path
+          Path("app.entitlements").write_text("""<?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>application-identifier</key>
             <string>com.keepassium.ios.pro</string>
             <key>com.apple.developer.team-identifier</key>
             <string>TROLL</string>
@@ -114,10 +150,9 @@ jobs:
             <true/>
           </dict>
           </plist>
-          EOF
-
-          cat > appex.entitlements << 'EOF'
-          <?xml
+          """, encoding="utf-8")
+          Path("appex.entitlements").write_text("""<?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>application-identifier</key>
@@ -139,26 +174,10 @@ jobs:
             <true/>
             <key>platform-application</key>
             <true/>
-          </dict>
-          </plist>
-          EOF
-
-          # strip accidental leading spaces from heredoc files
-          sed -i '' 's/^  "$APP_PATH/Frameworks" ]; then
-            find "$APP_PATH/Frameworks" -name '*.framework' -maxdepth 1 | while read fw; do
-              codesign --force --sign - --entitlements app.entitlements --timestamp=none "$fw"
-            done
-          fi
-
-          if [ -d "$APP_PATH/PlugIns" ]; then
-            find "$APP_PATH/PlugIns" -name '*.appex' -maxdepth 1 | while read appex; do
-              codesign --force --sign - --entitlements appex.entitlements --timestamp=none "$appex"
-            done
-          fi
-
           codesign --force --sign - --entitlements app.entitlements --timestamp=none "$APP_PATH"
           codesign -d --entitlements :- "$APP_PATH" | head -n 50 || true
-          /usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP_PATH/Info/_CodeSignature" || true
+          /usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP_PATH/Info.plist" || true
+          ls -la "$APP_PATH/_CodeSignature" || true
 
           rm -rf ipa_stage
           mkdir -p ipa_stage/Payload
@@ -172,12 +191,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: KeePassium-Pro-1.53.154-IPA
-          path: KeePassium-Pro-1.53.154.ipa
-
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
+          path: uses: actions/upload-artifact@v4
         with:
-          name: build-
+          name: build-log
           path: build.log
           if-no-files-found: warn
