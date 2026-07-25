@@ -12,14 +12,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # #1 规避 format 76
+      # #1
       - name: Select Xcode 16.4
         run: |
           set -euo pipefail
           sudo xcode-select -s /Applications/Xcode_16.4.app
           xcodebuild -version
 
-      # #4 规避 TPInAppReceipt 坏 pin
+      # #4
       - name: Fix Swift package pins
         run: |
           set -euo pipefail
@@ -33,13 +33,67 @@ jobs:
             find . -name Package.resolved -delete
           fi
 
+      # #6：生成传统 appiconset，满足 app-icon-pro / app-icon
+      - name: Create classic app icon sets
+        run: |
+          set -euo pipefail
+
+          SRC="KeePassium/app-icons"
+          test -d "$SRC"
+
+          make_appiconset() {
+            local name="$1"
+            local prefix="$2"
+            local out="KeePassium/Assets.xcassets/${name}.appiconset"
+            mkdir -p "$out"
+
+            # 用仓库已有 PNG 填充关键尺寸
+            cp "$SRC/${prefix}_iPhoneApp_60@2x.png"        "$out/peter.m@example.com"
+            cp "$SRC/${prefix}_iPhoneApp_60@3x.png"        "$out/alice.j@example.com"
+            cp "$SRC/${prefix}_iPadApp_76.png"             "$out/icon-76.png"
+            cp "$SRC/${prefix}_iPadApp_76@2x.png"          "$out/wendy.h@example.net"
+            cp "$SRC/${prefix}_iPadProApp_83.5@2x.png"     "$out/nathan.k@example.net"
+
+            # 设置页图标若无单独资源，复用 60pt
+            cp "$SRC/${prefix}_iPhoneApp_60@2x.png"        "$out/zoe.m@example.net"
+            cp "$SRC/${prefix}_iPhoneApp_60@3x.png"        "$out/nina.v@example.com"
+            cp "$SRC/${prefix}_iPhoneApp_60@2x.png"        "$out/james.b@example.com"
+
+            cat > "$out/Contents.json" <<'EOF'
+          {
+            "images" : [
+              { "filename" : "zoe.m@example.net", "idiom" : "iphone", "scale" : "2x", "size" : "29x29" },
+              { "filename" : "nina.v@example.com", "idiom" : "iphone", "scale" : "3x", "size" : "29x29" },
+              { "filename" : "james.b@example.com", "idiom" : "iphone", "scale" : "2x", "size" : "40x40" },
+              { "filename" : "peter.m@example.com", "idiom" : "iphone", "scale" : "2x", "size" : "60x60" },
+              { "filename" : "alice.j@example.com", "idiom" : "iphone", "scale" : "3x", "size" : "60x60" },
+              { "filename" : "icon-76.png", "idiom" : "ipad", "scale" : "1x", "size" : "76x76" },
+              { "filename" : "wendy.h@example.net", "idiom" : "ipad", "scale" : "2x", "size" : "76x76" },
+              { "filename" : "nathan.k@example.net", "idiom" : "ipad", "scale" : "2x", "size" : "83.5x83.5" }
+            ],
+            "info" : { "author" : "xcode", "version" : 1 }
+          }
+          EOF
+
+            echo "Created $out"
+            ls -la "$out"
+          }
+
+          # Pro 主图标
+          make_appiconset "app-icon-pro" "appicon-classic-pro"
+          # 兜底：免费/其他配置若被拉到也不炸
+          make_appiconset "app-icon" "appicon-classic-free"
+          make_appiconset "app-icon-emm" "appicon-classic-pro"
+
+          echo "App icon sets in Assets:"
+          ls -la KeePassium/Assets.xcassets | grep app-icon || true
+
       - name: List projects
         run: |
           set -euo pipefail
           xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -list
           xcodebuild -project KeePassium.xcodeproj -list
 
-      # 固定 SPM 路径，便于后面给 YubiKit 做链接
       - name: Resolve packages
         run: |
           set -euo pipefail
@@ -54,10 +108,9 @@ jobs:
             -project KeePassium.xcodeproj \
             -clonedSourcePackagesDirPath "$PWD/SourcePackages"
 
-          echo "SPM checkouts:"
           ls -la SourcePackages/checkouts || true
 
-      # #5 规避 YubiKit 头文件：满足工程里的 ../YubiKit/**
+      # #5
       - name: Link YubiKit headers path
         run: |
           set -euo pipefail
@@ -76,19 +129,11 @@ jobs:
           fi
 
           echo "YubiKit checkout: $YUBI_CHECKOUT"
-          ls -la "$YUBI_CHECKOUT/YubiKit"
-
-          # 工程 HEADER_SEARCH_PATHS = "../YubiKit/**"
-          # PROJECT_DIR = 仓库根目录，所以要在仓库的上一级放 YubiKit
           ln -sfn "$YUBI_CHECKOUT/YubiKit" "$PWD/../YubiKit"
           ls -la "$PWD/../YubiKit"
-          # 抽查关键头文件
           ls -la "$PWD/../YubiKit/YubiKit/Helpers/Additions/UIDeviceAdditions.h"
-          ls -la "$PWD/../YubiKit/YubiKit/Connections/Shared/Services/NFC/YKFNFCSession.h" \
-            || ls -la "$PWD/../YubiKit/YubiKit/Connections" || true
 
-      # #2 #3：SYMROOT；先 Lib 后 Pro
-      # 注意：绝不能全局覆盖 HEADER_SEARCH_PATHS
+      # #2 #3；不要全局覆盖 HEADER_SEARCH_PATHS
       - name: Build KeePassiumLib then KeePassium Pro
         run: |
           set -euo pipefail
@@ -132,12 +177,13 @@ jobs:
           fi
 
           echo "===== 2) Build KeePassium Pro ====="
-          # 只补 framework 搜索路径，不覆盖 HEADER_SEARCH_PATHS
           xcodebuild \
             -project KeePassium.xcodeproj \
             -target "KeePassium Pro" \
             "${COMMON[@]}" \
             FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" \
+            ASSETCATALOG_COMPILER_APPICON_NAME=app-icon-pro \
+            ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
             build 2>&1 | tee -a build.log
           STATUS2=${PIPESTATUS[0]}
           set -e
