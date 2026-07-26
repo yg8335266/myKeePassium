@@ -62,11 +62,15 @@ jobs:
 
       - name: Build
         run: |
-          set -e
+          set -euo pipefail
           BUILD_ROOT="$PWD/build"
           rm -rf "$BUILD_ROOT" build.log
           mkdir -p "$BUILD_ROOT"
+          : > build.log
           # Force iOS 15.4 so the IPA cannot silently become master/2.6 (iOS 17)
+          # DO NOT override SWIFT_ACTIVE_COMPILATION_CONDITIONS globally.
+          # Pro targets already define: PREPAID_VERSION + MAIN_APP / AUTOFILL_EXT.
+          # Overwriting with only PREPAID_VERSION removes MAIN_APP/AUTOFILL_EXT and breaks compile.
           COMMON=(
             -configuration Release
             -sdk iphoneos
@@ -77,22 +81,42 @@ jobs:
             DEVELOPMENT_TEAM=
             ONLY_ACTIVE_ARCH=NO
             IPHONEOS_DEPLOYMENT_TARGET=15.4
-            SWIFT_ACTIVE_COMPILATION_CONDITIONS="PREPAID_VERSION"
             SYMROOT="$BUILD_ROOT"
             BUILD_DIR="$BUILD_ROOT"
           )
-          # 1) shared lib
-          xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -target KeePassiumLib "${COMMON[@]}" build 2>&1 | tee build.log
+          run_build() {
+            local label="$1"; shift
+            echo "===== BUILD: $label ====="
+            set +e
+            xcodebuild "$@" build 2>&1 | tee -a build.log
+            local xc=${PIPESTATUS[0]}
+            set -e
+            if [ "$xc" -ne 0 ]; then
+              echo "xcodebuild failed for $label with exit $xc"
+              exit "$xc"
+            fi
+            echo "===== BUILD OK: $label ====="
+          }
+          # 1) shared lib (Pro prepaid comes from source patches + Pro target flags)
+          run_build "KeePassiumLib" -project KeePassiumLib/KeePassiumLib.xcodeproj -target KeePassiumLib "${COMMON[@]}"
           # 2) Pro AutoFill first (ensures appex exists even if embed race)
-          xcodebuild -project KeePassium.xcodeproj -target "KeePassium Pro AutoFill" "${COMMON[@]}" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" build 2>&1 | tee -a build.log
+          run_build "KeePassium Pro AutoFill" -project KeePassium.xcodeproj -target "KeePassium Pro AutoFill" "${COMMON[@]}" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**"
           # 3) Pro app (embeds AutoFill)
-          xcodebuild -project KeePassium.xcodeproj -target "KeePassium Pro" "${COMMON[@]}" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" ASSETCATALOG_COMPILER_APPICON_NAME=app-icon-pro ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO build 2>&1 | tee -a build.log
+          run_build "KeePassium Pro" -project KeePassium.xcodeproj -target "KeePassium Pro" "${COMMON[@]}" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" ASSETCATALOG_COMPILER_APPICON_NAME=app-icon-pro ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO
+          test -d "$BUILD_ROOT/Release-iphoneos/KeePassium Pro.app"
+          test -d "$BUILD_ROOT/Release-iphoneos/KeePassium Pro.app/PlugIns/KeePassium Pro AutoFill.appex"
+          ls -la "$BUILD_ROOT/Release-iphoneos" | head -n 50
+          ls -la "$BUILD_ROOT/Release-iphoneos"/*.bundle 2>/dev/null || true
 
       - name: Sign and package IPA
         run: |
-          set -e
-          APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
-          test -n "$APP_PATH"
+          set -euo pipefail
+          APP_PATH="$PWD/build/Release-iphoneos/KeePassium Pro.app"
+          if [ ! -d "$APP_PATH" ]; then
+            APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1 || true)"
+          fi
+          test -n "${APP_PATH:-}"
+          test -d "$APP_PATH"
           echo "App=$APP_PATH"
           APPEX_PATH="$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex"
           test -d "$APPEX_PATH"
