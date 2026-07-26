@@ -64,25 +64,54 @@ jobs:
           APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
           test -n "$APP_PATH"
           echo "App=$APP_PATH"
-          # App ID: com.keepassium.ios.pro
-          # Appex ID: com.keepassium.ios.pro.KeePassium-AutoFill
-          # keychain group MUST match Keychain.accessGroup patch
-          echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgo8ZGljdD4KCTxrZXk+YXBwbGljYXRpb24taWRlbnRpZmllcjwva2V5PgoJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5pb3MucHJvPC9zdHJpbmc+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIudGVhbS1pZGVudGlmaWVyPC9rZXk+Cgk8c3RyaW5nPlRST0xMPC9zdHJpbmc+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIuYXV0aGVudGljYXRpb24tc2VydmljZXMuYXV0b2ZpbGwtY3JlZGVudGlhbC1wcm92aWRlcjwva2V5PgoJPHRydWUvPgoJPGtleT5jb20uYXBwbGUuc2VjdXJpdHkuYXBwbGljYXRpb24tZ3JvdXBzPC9rZXk+Cgk8YXJyYXk+CgkJPHN0cmluZz5ncm91cC5jb20ua2VlcGFzc2l1bTwvc3RyaW5nPgoJPC9hcnJheT4KCTxrZXk+a2V5Y2hhaW4tYWNjZXNzLWdyb3Vwczwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+VFJPTEwuY29tLmtlZXBhc3NpdW0uU2hhcmVkSXRlbXM8L3N0cmluZz4KCTwvYXJyYXk+CjwvZGljdD4KPC9wbGlzdD4=' | base64 -D > app.entitlements
+
+          # Entitlements mirrored from official decrypted IPA (team 84W4PHXS24 -> TROLL),
+          # Pro bundle IDs, no iCloud (needs real Apple team; useless under TrollStore).
+          # Official keychain group shape: TEAMID.com.keepassium.SharedItems
+          # Official app group: group.com.keepassium
+          # Official autofill-credential-provider: true
+          echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgo8ZGljdD4KCTxrZXk+YXBwbGljYXRpb24taWRlbnRpZmllcjwva2V5PgoJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5pb3MucHJvPC9zdHJpbmc+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIudGVhbS1pZGVudGlmaWVyPC9rZXk+Cgk8c3RyaW5nPlRST0xMPC9zdHJpbmc+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIuYXV0aGVudGljYXRpb24tc2VydmljZXMuYXV0b2ZpbGwtY3JlZGVudGlhbC1wcm92aWRlcjwva2V5PgoJPHRydWUvPgoJPGtleT5jb20uYXBwbGUuZGV2ZWxvcGVyLmRlZmF1bHQtZGF0YS1wcm90ZWN0aW9uPC9rZXk+Cgk8c3RyaW5nPk5TRmlsZVByb3RlY3Rpb25Db21wbGV0ZTwvc3RyaW5nPgoJPGtleT5jb20uYXBwbGUuZGV2ZWxvcGVyLmFzc29jaWF0ZWQtZG9tYWluczwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+d2ViY3JlZGVudGlhbHM6a2VlcGFzc2l1bS5jb208L3N0cmluZz4KCTwvYXJyYXk+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIubmZjLnJlYWRlcnNlc3Npb24uZm9ybWF0czwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+VEFHPC9zdHJpbmc+Cgk8L2FycmF5PgoJPGtleT5jb20uYXBwbGUuc2VjdXJpdHkuYXBwbGljYXRpb24tZ3JvdXBzPC9rZXk+Cgk8YXJyYXk+CgkJPHN0cmluZz5ncm91cC5jb20ua2VlcGFzc2l1bTwvc3RyaW5nPgoJPC9hcnJheT4KCTxrZXk+a2V5Y2hhaW4tYWNjZXNzLWdyb3Vwczwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+VFJPTEwuY29tLmtlZXBhc3NpdW0uU2hhcmVkSXRlbXM8L3N0cmluZz4KCTwvYXJyYXk+CjwvZGljdD4KPC9wbGlzdD4=' | base64 -D > app.entitlements
           echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgo8ZGljdD4KCTxrZXk+YXBwbGljYXRpb24taWRlbnRpZmllcjwva2V5PgoJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5pb3MucHJvLktlZVBhc3NpdW0tQXV0b0ZpbGw8L3N0cmluZz4KCTxrZXk+Y29tLmFwcGxlLmRldmVsb3Blci50ZWFtLWlkZW50aWZpZXI8L2tleT4KCTxzdHJpbmc+VFJPTEw8L3N0cmluZz4KCTxrZXk+Y29tLmFwcGxlLmRldmVsb3Blci5hdXRoZW50aWNhdGlvbi1zZXJ2aWNlcy5hdXRvZmlsbC1jcmVkZW50aWFsLXByb3ZpZGVyPC9rZXk+Cgk8dHJ1ZS8+Cgk8a2V5PmNvbS5hcHBsZS5zZWN1cml0eS5hcHBsaWNhdGlvbi1ncm91cHM8L2tleT4KCTxhcnJheT4KCQk8c3RyaW5nPmdyb3VwLmNvbS5rZWVwYXNzaXVtPC9zdHJpbmc+Cgk8L2FycmF5PgoJPGtleT5rZXljaGFpbi1hY2Nlc3MtZ3JvdXBzPC9rZXk+Cgk8YXJyYXk+CgkJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5TaGFyZWRJdGVtczwvc3RyaW5nPgoJPC9hcnJheT4KPC9kaWN0Pgo8L3BsaXN0Pg==' | base64 -D > appex.entitlements
+
           echo '--- app.entitlements ---'
           cat app.entitlements
           echo '--- appex.entitlements ---'
           cat appex.entitlements
+
           /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/Info.plist"
           /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex/Info.plist" || true
-          if [ -d "$APP_PATH/Frameworks" ]; then find "$APP_PATH/Frameworks" -name '*.framework' -maxdepth 1 -exec codesign --force --sign - --entitlements app.entitlements --timestamp=none {} \;; fi
-          if [ -d "$APP_PATH/PlugIns" ]; then find "$APP_PATH/PlugIns" -name '*.appex' -maxdepth 1 -exec codesign --force --sign - --entitlements appex.entitlements --timestamp=none {} \;; fi
-          codesign --force --sign - --entitlements app.entitlements --timestamp=none "$APP_PATH"
-          codesign -d --entitlements :- "$APP_PATH" | head -n 80 || true
-          codesign -d --entitlements :- "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex" | head -n 80 || true
           /usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP_PATH/Info.plist" || true
-          ls -la "$APP_PATH/_CodeSignature"
-          ls -la "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex/_CodeSignature" || true
+
+          # Official-like packaging extras
+          printf 'APPL????' > "$APP_PATH/PkgInfo"
+          rm -rf "$APP_PATH/SC_Info" "$APP_PATH/PlugIns/"*/SC_Info "$APP_PATH/Frameworks/"*/SC_Info || true
+
+          # Nested sign order: frameworks -> appex -> app (same as Apple)
+          if [ -d "$APP_PATH/Frameworks" ]; then
+            find "$APP_PATH/Frameworks" -name '*.framework' -maxdepth 1 -print0 | while IFS= read -r -d '' fw; do
+              codesign --force --sign - --entitlements app.entitlements --timestamp=none "$fw"
+            done
+          fi
+          if [ -d "$APP_PATH/PlugIns" ]; then
+            find "$APP_PATH/PlugIns" -name '*.appex' -maxdepth 1 -print0 | while IFS= read -r -d '' plugin; do
+              codesign --force --sign - --entitlements appex.entitlements --timestamp=none "$plugin"
+            done
+          fi
+          codesign --force --sign - --entitlements app.entitlements --timestamp=none "$APP_PATH"
+
+          echo '--- signed app entitlements ---'
+          codesign -d --entitlements :- "$APP_PATH" | head -n 100 || true
+          echo '--- signed appex entitlements ---'
+          codesign -d --entitlements :- "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex" | head -n 100 || true
+
+          echo '--- structure check ---'
+          ls -la "$APP_PATH" | head -n 40
+          ls -la "$APP_PATH/PlugIns" || true
+          ls -la "$APP_PATH/Frameworks" || true
+          test -d "$APP_PATH/_CodeSignature"
+          test -d "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex/_CodeSignature"
+          test -d "$APP_PATH/Frameworks/KeePassiumLib.framework"
+
           rm -rf ipa_stage
           mkdir -p ipa_stage/Payload
           cp -R "$APP_PATH" ipa_stage/Payload/
