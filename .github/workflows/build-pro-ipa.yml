@@ -16,7 +16,16 @@ jobs:
           fetch-depth: 0
 
       - name: Verify version
-        run: git describe --tags --exact-match HEAD
+        run: |
+          set -e
+          TAG="$(git describe --tags --exact-match HEAD)"
+          echo "TAG=$TAG"
+          test "$TAG" = "1.53.154"
+          # Fail early if someone swapped checkout to master/2.x
+          grep -R "IPHONEOS_DEPLOYMENT_TARGET = 15.4" KeePassium.xcodeproj/project.pbxproj >/dev/null
+          ! grep -R "IPHONEOS_DEPLOYMENT_TARGET = 17.0" KeePassium.xcodeproj/project.pbxproj >/dev/null
+          ! grep -R "MARKETING_VERSION = 2.6" KeePassium.xcodeproj/project.pbxproj >/dev/null
+          echo "Source is 1.53.154 / iOS 15.4 OK"
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app && xcodebuild -version
@@ -34,10 +43,11 @@ jobs:
 
       - name: Patch for TrollStore persistence
         run: |
-          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpkZWYgbXVzdF9yZXBsYWNlKHBhdGgsIG9sZCwgbmV3LCBsYWJlbCk6CiAgICBwID0gUGF0aChwYXRoKQogICAgdCA9IHAucmVhZF90ZXh0KGVuY29kaW5nPSJ1dGYtOCIpCiAgICBpZiBvbGQgbm90IGluIHQ6CiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdChmIkZBSUwge2xhYmVsfTogcGF0dGVybiBub3QgZm91bmQgaW4ge3BhdGh9IikKICAgIHAud3JpdGVfdGV4dCh0LnJlcGxhY2Uob2xkLCBuZXcsIDEpLCBlbmNvZGluZz0idXRmLTgiKQogICAgcHJpbnQoZiJPSyB7bGFiZWx9IikKCiMgMSkgS2V5Y2hhaW4gdW5leHBlY3RlZEZvcm1hdCAtPiBkZWxldGUgZGlydHkgaXRlbQptdXN0X3JlcGxhY2UoCiAgICAiS2VlUGFzc2l1bUxpYi9LZWVQYXNzaXVtTGliL3V0aWwvS2V5Y2hhaW4uc3dpZnQiLAogICAgJyAgICAgICAgICAgIERpYWcuZXJyb3IoIktleWNoYWluIGVycm9yOiB1bmV4cGVjdGVkIGZvcm1hdCIpXG4gICAgICAgICAgICB0aHJvdyBLZXljaGFpbkVycm9yLnVuZXhwZWN0ZWRGb3JtYXQnLAogICAgJyAgICAgICAgICAgIERpYWcud2FybmluZygiS2V5Y2hhaW4gaXRlbSB1bmV4cGVjdGVkIGZvcm1hdCwgcmVtb3ZpbmciKVxuICAgICAgICAgICAgdHJ5PyByZW1vdmUoc2VydmljZTogc2VydmljZSwgYWNjb3VudDogYWNjb3VudClcbiAgICAgICAgICAgIHJldHVybiBuaWwnLAogICAgImtleWNoYWluLXVuZXhwZWN0ZWRGb3JtYXQiLAopCgojIDIpIEZvcmNlIGtleWNoYWluIGFjY2VzcyBncm91cCAoVHJvbGxTdG9yZSBkZWZhdWx0IGtleWNoYWluIGlzIHVucmVsaWFibGUpCm11c3RfcmVwbGFjZSgKICAgICJLZWVQYXNzaXVtTGliL0tlZVBhc3NpdW1MaWIvdXRpbC9LZXljaGFpbi5zd2lmdCIsCiAgICAiICAgIHByaXZhdGUgc3RhdGljIGxldCBhY2Nlc3NHcm91cDogU3RyaW5nPyA9IG5pbCIsCiAgICAnICAgIHByaXZhdGUgc3RhdGljIGxldCBhY2Nlc3NHcm91cDogU3RyaW5nPyA9ICJUUk9MTC5jb20ua2VlcGFzc2l1bS5TaGFyZWRJdGVtcyInLAogICAgImtleWNoYWluLWFjY2Vzc0dyb3VwIiwKKQoKIyAzKSBEbyBub3Qgd2lwZSBlbnRpcmUga2V5Y2hhaW4gd2hlbiBTRSBrZXkgbWlzc2luZzsganVzdCByZWNyZWF0ZSBrZXkKb2xkX2luaXQgPSAiIiIgICAgICAgIGxldCBoYXNNZW1vcnlQcm90ZWN0aW9uS2V5RGlzYXBwZWFyZWQgPQogICAgICAgICAgICBTZWN1cmVFbmNsYXZlLmlzQXZhaWxhYmxlICYmCiAgICAgICAgICAgICFTZXR0aW5ncy5jdXJyZW50LmlzRmlyc3RMYXVuY2ggJiYKICAgICAgICAgICAgIWlzTWVtb3J5UHJvdGVjdGlvbktleUV4aXN0KCkKICAgICAgICBpZiBoYXNNZW1vcnlQcm90ZWN0aW9uS2V5RGlzYXBwZWFyZWQgewogICAgICAgICAgICBEaWFnLndhcm5pbmcoXCJNZW1vcnkgcHJvdGVjdGlvbiBrZXkgaXMgZ29uZS4gRGV2aWNlIHdhcyByZXN0b3JlZCBmcm9tIGJhY2t1cD9cIikKICAgICAgICAgICAgcmVzZXQoKQogICAgICAgIH0iIiIKbmV3X2luaXQgPSAiIiIgICAgICAgIGlmIFNlY3VyZUVuY2xhdmUuaXNBdmFpbGFibGUgJiYgIWlzTWVtb3J5UHJvdGVjdGlvbktleUV4aXN0KCkgewogICAgICAgICAgICBEaWFnLndhcm5pbmcoXCJNZW1vcnkgcHJvdGVjdGlvbiBrZXkgbWlzc2luZzsgY3JlYXRpbmcgd2l0aG91dCB3aXBpbmcga2V5Y2hhaW5cIikKICAgICAgICAgICAgbWFrZUFuZFN0b3JlTWVtb3J5UHJvdGVjdGlvbktleSgpCiAgICAgICAgfSIiIgptdXN0X3JlcGxhY2UoCiAgICAiS2VlUGFzc2l1bUxpYi9LZWVQYXNzaXVtTGliL3V0aWwvS2V5Y2hhaW4uc3dpZnQiLAogICAgb2xkX2luaXQsCiAgICBuZXdfaW5pdCwKICAgICJrZXljaGFpbi1uby13aXBlLW9uLXNlLW1pc3NpbmciLAopCgojIDQpIFVzZXJEZWZhdWx0cyBhcHAgZ3JvdXA6IGNyZWF0ZSBjb250YWluZXIgaWYgbmVlZGVkLCBmYWxsYmFjayB0byBzdGFuZGFyZAptdXN0X3JlcGxhY2UoCiAgICAiS2VlUGFzc2l1bUxpYi9LZWVQYXNzaXVtTGliL3V0aWwvVXNlckRlZmF1bHRzK2FwcEdyb3VwU2hhcmVkLnN3aWZ0IiwKICAgICIiIiAgICBzdGF0aWMgdmFyIGFwcEdyb3VwU2hhcmVkOiBVc2VyRGVmYXVsdHMgewogICAgICAgIGd1YXJkIGxldCBpbnN0YW5jZSA9IFVzZXJEZWZhdWx0cyhzdWl0ZU5hbWU6IEFwcEdyb3VwLmlkKSBlbHNlIHsKICAgICAgICAgICAgZmF0YWxFcnJvcihcIkZhaWxlZCB0byBjcmVhdGUgYXBwIGdyb3VwIHVzZXIgZGVmYXVsdHMuXCIpCiAgICAgICAgfQogICAgICAgIHJldHVybiBpbnN0YW5jZQogICAgfSIiIiwKICAgICIiIiAgICBzdGF0aWMgdmFyIGFwcEdyb3VwU2hhcmVkOiBVc2VyRGVmYXVsdHMgewogICAgICAgIGlmIGxldCB1cmwgPSBGaWxlTWFuYWdlci5kZWZhdWx0LmNvbnRhaW5lclVSTChmb3JTZWN1cml0eUFwcGxpY2F0aW9uR3JvdXBJZGVudGlmaWVyOiBBcHBHcm91cC5pZCkgewogICAgICAgICAgICB0cnk/IEZpbGVNYW5hZ2VyLmRlZmF1bHQuY3JlYXRlRGlyZWN0b3J5KGF0OiB1cmwsIHdpdGhJbnRlcm1lZGlhdGVEaXJlY3RvcmllczogdHJ1ZSkKICAgICAgICAgICAgaWYgbGV0IGluc3RhbmNlID0gVXNlckRlZmF1bHRzKHN1aXRlTmFtZTogQXBwR3JvdXAuaWQpIHsKICAgICAgICAgICAgICAgIHJldHVybiBpbnN0YW5jZQogICAgICAgICAgICB9CiAgICAgICAgfQogICAgICAgIERpYWcud2FybmluZyhcIkFwcCBHcm91cCBVc2VyRGVmYXVsdHMgdW5hdmFpbGFibGUsIGZhbGxpbmcgYmFjayB0byBzdGFuZGFyZFwiKQogICAgICAgIHJldHVybiBVc2VyRGVmYXVsdHMuc3RhbmRhcmQKICAgIH0iIiIsCiAgICAidXNlcmRlZmF1bHRzLWFwcGdyb3VwLWZhbGxiYWNrIiwKKQoKcHJpbnQoIkFMTCBQQVRDSEVTIE9LIik=' | base64 -D > /tmp/patch_kp.py
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpkZWYgbXVzdF9yZXBsYWNlKHBhdGgsIG9sZCwgbmV3LCBsYWJlbCk6CiAgICBwID0gUGF0aChwYXRoKQogICAgdCA9IHAucmVhZF90ZXh0KGVuY29kaW5nPSJ1dGYtOCIpCiAgICBpZiBvbGQgbm90IGluIHQ6CiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdChmIkZBSUwge2xhYmVsfTogcGF0dGVybiBub3QgZm91bmQgaW4ge3BhdGh9IikKICAgIHAud3JpdGVfdGV4dCh0LnJlcGxhY2Uob2xkLCBuZXcsIDEpLCBlbmNvZGluZz0idXRmLTgiKQogICAgcHJpbnQoZiJPSyB7bGFiZWx9IikKCm11c3RfcmVwbGFjZSgKICAgICJLZWVQYXNzaXVtTGliL0tlZVBhc3NpdW1MaWIvdXRpbC9LZXljaGFpbi5zd2lmdCIsCiAgICAnICAgICAgICAgICAgRGlhZy5lcnJvcigiS2V5Y2hhaW4gZXJyb3I6IHVuZXhwZWN0ZWQgZm9ybWF0IilcbiAgICAgICAgICAgIHRocm93IEtleWNoYWluRXJyb3IudW5leHBlY3RlZEZvcm1hdCcsCiAgICAnICAgICAgICAgICAgRGlhZy53YXJuaW5nKCJLZXljaGFpbiBpdGVtIHVuZXhwZWN0ZWQgZm9ybWF0LCByZW1vdmluZyIpXG4gICAgICAgICAgICB0cnk/IHJlbW92ZShzZXJ2aWNlOiBzZXJ2aWNlLCBhY2NvdW50OiBhY2NvdW50KVxuICAgICAgICAgICAgcmV0dXJuIG5pbCcsCiAgICAia2V5Y2hhaW4tdW5leHBlY3RlZEZvcm1hdCIsCikKCm11c3RfcmVwbGFjZSgKICAgICJLZWVQYXNzaXVtTGliL0tlZVBhc3NpdW1MaWIvdXRpbC9LZXljaGFpbi5zd2lmdCIsCiAgICAiICAgIHByaXZhdGUgc3RhdGljIGxldCBhY2Nlc3NHcm91cDogU3RyaW5nPyA9IG5pbCIsCiAgICAnICAgIHByaXZhdGUgc3RhdGljIGxldCBhY2Nlc3NHcm91cDogU3RyaW5nPyA9ICJUUk9MTC5jb20ua2VlcGFzc2l1bS5TaGFyZWRJdGVtcyInLAogICAgImtleWNoYWluLWFjY2Vzc0dyb3VwIiwKKQoKb2xkX2luaXQgPSAiIiIgICAgICAgIGxldCBoYXNNZW1vcnlQcm90ZWN0aW9uS2V5RGlzYXBwZWFyZWQgPQogICAgICAgICAgICBTZWN1cmVFbmNsYXZlLmlzQXZhaWxhYmxlICYmCiAgICAgICAgICAgICFTZXR0aW5ncy5jdXJyZW50LmlzRmlyc3RMYXVuY2ggJiYKICAgICAgICAgICAgIWlzTWVtb3J5UHJvdGVjdGlvbktleUV4aXN0KCkKICAgICAgICBpZiBoYXNNZW1vcnlQcm90ZWN0aW9uS2V5RGlzYXBwZWFyZWQgewogICAgICAgICAgICBEaWFnLndhcm5pbmcoXCJNZW1vcnkgcHJvdGVjdGlvbiBrZXkgaXMgZ29uZS4gRGV2aWNlIHdhcyByZXN0b3JlZCBmcm9tIGJhY2t1cD9cIikKICAgICAgICAgICAgcmVzZXQoKQogICAgICAgIH0iIiIKbmV3X2luaXQgPSAiIiIgICAgICAgIGlmIFNlY3VyZUVuY2xhdmUuaXNBdmFpbGFibGUgJiYgIWlzTWVtb3J5UHJvdGVjdGlvbktleUV4aXN0KCkgewogICAgICAgICAgICBEaWFnLndhcm5pbmcoXCJNZW1vcnkgcHJvdGVjdGlvbiBrZXkgbWlzc2luZzsgY3JlYXRpbmcgd2l0aG91dCB3aXBpbmcga2V5Y2hhaW5cIikKICAgICAgICAgICAgbWFrZUFuZFN0b3JlTWVtb3J5UHJvdGVjdGlvbktleSgpCiAgICAgICAgfSIiIgptdXN0X3JlcGxhY2UoCiAgICAiS2VlUGFzc2l1bUxpYi9LZWVQYXNzaXVtTGliL3V0aWwvS2V5Y2hhaW4uc3dpZnQiLAogICAgb2xkX2luaXQsCiAgICBuZXdfaW5pdCwKICAgICJrZXljaGFpbi1uby13aXBlLW9uLXNlLW1pc3NpbmciLAopCgojIE1haW4gYXBwIGFuZCBBdXRvRmlsbCBtdXN0IHNoYXJlIHRoZSBzYW1lIHN1aXRlOyBuZXZlciBmYWxsIGJhY2sgdG8gLnN0YW5kYXJkCm11c3RfcmVwbGFjZSgKICAgICJLZWVQYXNzaXVtTGliL0tlZVBhc3NpdW1MaWIvdXRpbC9Vc2VyRGVmYXVsdHMrYXBwR3JvdXBTaGFyZWQuc3dpZnQiLAogICAgIiIiICAgIHN0YXRpYyB2YXIgYXBwR3JvdXBTaGFyZWQ6IFVzZXJEZWZhdWx0cyB7CiAgICAgICAgZ3VhcmQgbGV0IGluc3RhbmNlID0gVXNlckRlZmF1bHRzKHN1aXRlTmFtZTogQXBwR3JvdXAuaWQpIGVsc2UgewogICAgICAgICAgICBmYXRhbEVycm9yKFwiRmFpbGVkIHRvIGNyZWF0ZSBhcHAgZ3JvdXAgdXNlciBkZWZhdWx0cy5cIikKICAgICAgICB9CiAgICAgICAgcmV0dXJuIGluc3RhbmNlCiAgICB9IiIiLAogICAgIiIiICAgIHN0YXRpYyB2YXIgYXBwR3JvdXBTaGFyZWQ6IFVzZXJEZWZhdWx0cyB7CiAgICAgICAgaWYgbGV0IHVybCA9IEZpbGVNYW5hZ2VyLmRlZmF1bHQuY29udGFpbmVyVVJMKGZvclNlY3VyaXR5QXBwbGljYXRpb25Hcm91cElkZW50aWZpZXI6IEFwcEdyb3VwLmlkKSB7CiAgICAgICAgICAgIHRyeT8gRmlsZU1hbmFnZXIuZGVmYXVsdC5jcmVhdGVEaXJlY3RvcnkoYXQ6IHVybCwgd2l0aEludGVybWVkaWF0ZURpcmVjdG9yaWVzOiB0cnVlKQogICAgICAgIH0KICAgICAgICBndWFyZCBsZXQgaW5zdGFuY2UgPSBVc2VyRGVmYXVsdHMoc3VpdGVOYW1lOiBBcHBHcm91cC5pZCkgZWxzZSB7CiAgICAgICAgICAgIGZhdGFsRXJyb3IoXCJGYWlsZWQgdG8gY3JlYXRlIGFwcCBncm91cCB1c2VyIGRlZmF1bHRzLlwiKQogICAgICAgIH0KICAgICAgICByZXR1cm4gaW5zdGFuY2UKICAgIH0iIiIsCiAgICAidXNlcmRlZmF1bHRzLWFwcGdyb3VwLWNvbnRhaW5lciIsCikKCnByaW50KCJBTEwgUEFUQ0hFUyBPSyIp' | base64 -D > /tmp/patch_kp.py
           python3 /tmp/patch_kp.py
           grep -n "unexpected format, removing\|TROLL.com.keepassium.SharedItems\|creating without wiping keychain" KeePassiumLib/KeePassiumLib/util/Keychain.swift
-          grep -n "falling back to standard\|containerURL" KeePassiumLib/KeePassiumLib/util/UserDefaults+appGroupShared.swift
+          grep -n "containerURL\|suiteName: AppGroup.id" KeePassiumLib/KeePassiumLib/util/UserDefaults+appGroupShared.swift
+          ! grep -q "falling back to standard" KeePassiumLib/KeePassiumLib/util/UserDefaults+appGroupShared.swift
 
       - name: Resolve packages
         run: |
@@ -55,8 +65,26 @@ jobs:
           BUILD_ROOT="$PWD/build"
           rm -rf "$BUILD_ROOT" build.log
           mkdir -p "$BUILD_ROOT"
-          xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -target KeePassiumLib -configuration Release -sdk iphoneos -clonedSourcePackagesDirPath "$PWD/SourcePackages" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= DEVELOPMENT_TEAM= ONLY_ACTIVE_ARCH=NO SYMROOT="$BUILD_ROOT" BUILD_DIR="$BUILD_ROOT" build 2>&1 | tee build.log
-          xcodebuild -project KeePassium.xcodeproj -target "KeePassium Pro" -configuration Release -sdk iphoneos -clonedSourcePackagesDirPath "$PWD/SourcePackages" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= DEVELOPMENT_TEAM= ONLY_ACTIVE_ARCH=NO SYMROOT="$BUILD_ROOT" BUILD_DIR="$BUILD_ROOT" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" ASSETCATALOG_COMPILER_APPICON_NAME=app-icon-pro ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO build 2>&1 | tee -a build.log
+          # Force iOS 15.4 so the IPA cannot silently become master/2.6 (iOS 17)
+          COMMON=(
+            -configuration Release
+            -sdk iphoneos
+            -clonedSourcePackagesDirPath "$PWD/SourcePackages"
+            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_REQUIRED=NO
+            CODE_SIGN_IDENTITY=
+            DEVELOPMENT_TEAM=
+            ONLY_ACTIVE_ARCH=NO
+            IPHONEOS_DEPLOYMENT_TARGET=15.4
+            SYMROOT="$BUILD_ROOT"
+            BUILD_DIR="$BUILD_ROOT"
+          )
+          # 1) shared lib
+          xcodebuild -project KeePassiumLib/KeePassiumLib.xcodeproj -target KeePassiumLib "${COMMON[@]}" build 2>&1 | tee build.log
+          # 2) Pro AutoFill first (ensures appex exists even if embed race)
+          xcodebuild -project KeePassium.xcodeproj -target "KeePassium Pro AutoFill" "${COMMON[@]}" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" build 2>&1 | tee -a build.log
+          # 3) Pro app (embeds AutoFill)
+          xcodebuild -project KeePassium.xcodeproj -target "KeePassium Pro" "${COMMON[@]}" FRAMEWORK_SEARCH_PATHS="$BUILD_ROOT/Release-iphoneos $BUILD_ROOT/Release-iphoneos/**" ASSETCATALOG_COMPILER_APPICON_NAME=app-icon-pro ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO build 2>&1 | tee -a build.log
 
       - name: Sign and package IPA
         run: |
@@ -64,12 +92,11 @@ jobs:
           APP_PATH="$(find "$PWD/build" -type d -name 'KeePassium Pro.app' | head -n 1)"
           test -n "$APP_PATH"
           echo "App=$APP_PATH"
+          APPEX_PATH="$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex"
+          test -d "$APPEX_PATH"
+          echo "Appex=$APPEX_PATH"
 
-          # Entitlements mirrored from official decrypted IPA (team 84W4PHXS24 -> TROLL),
-          # Pro bundle IDs, no iCloud (needs real Apple team; useless under TrollStore).
-          # Official keychain group shape: TEAMID.com.keepassium.SharedItems
-          # Official app group: group.com.keepassium
-          # Official autofill-credential-provider: true
+          # Official-mirrored entitlements (team 84W4PHXS24 -> TROLL), Pro IDs, no iCloud.
           echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgo8ZGljdD4KCTxrZXk+YXBwbGljYXRpb24taWRlbnRpZmllcjwva2V5PgoJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5pb3MucHJvPC9zdHJpbmc+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIudGVhbS1pZGVudGlmaWVyPC9rZXk+Cgk8c3RyaW5nPlRST0xMPC9zdHJpbmc+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIuYXV0aGVudGljYXRpb24tc2VydmljZXMuYXV0b2ZpbGwtY3JlZGVudGlhbC1wcm92aWRlcjwva2V5PgoJPHRydWUvPgoJPGtleT5jb20uYXBwbGUuZGV2ZWxvcGVyLmRlZmF1bHQtZGF0YS1wcm90ZWN0aW9uPC9rZXk+Cgk8c3RyaW5nPk5TRmlsZVByb3RlY3Rpb25Db21wbGV0ZTwvc3RyaW5nPgoJPGtleT5jb20uYXBwbGUuZGV2ZWxvcGVyLmFzc29jaWF0ZWQtZG9tYWluczwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+d2ViY3JlZGVudGlhbHM6a2VlcGFzc2l1bS5jb208L3N0cmluZz4KCTwvYXJyYXk+Cgk8a2V5PmNvbS5hcHBsZS5kZXZlbG9wZXIubmZjLnJlYWRlcnNlc3Npb24uZm9ybWF0czwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+VEFHPC9zdHJpbmc+Cgk8L2FycmF5PgoJPGtleT5jb20uYXBwbGUuc2VjdXJpdHkuYXBwbGljYXRpb24tZ3JvdXBzPC9rZXk+Cgk8YXJyYXk+CgkJPHN0cmluZz5ncm91cC5jb20ua2VlcGFzc2l1bTwvc3RyaW5nPgoJPC9hcnJheT4KCTxrZXk+a2V5Y2hhaW4tYWNjZXNzLWdyb3Vwczwva2V5PgoJPGFycmF5PgoJCTxzdHJpbmc+VFJPTEwuY29tLmtlZXBhc3NpdW0uU2hhcmVkSXRlbXM8L3N0cmluZz4KCTwvYXJyYXk+CjwvZGljdD4KPC9wbGlzdD4=' | base64 -D > app.entitlements
           echo 'PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHBsaXN0IFBVQkxJQyAiLS8vQXBwbGUvL0RURCBQTElTVCAxLjAvL0VOIiAiaHR0cDovL3d3dy5hcHBsZS5jb20vRFREcy9Qcm9wZXJ0eUxpc3QtMS4wLmR0ZCI+CjxwbGlzdCB2ZXJzaW9uPSIxLjAiPgo8ZGljdD4KCTxrZXk+YXBwbGljYXRpb24taWRlbnRpZmllcjwva2V5PgoJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5pb3MucHJvLktlZVBhc3NpdW0tQXV0b0ZpbGw8L3N0cmluZz4KCTxrZXk+Y29tLmFwcGxlLmRldmVsb3Blci50ZWFtLWlkZW50aWZpZXI8L2tleT4KCTxzdHJpbmc+VFJPTEw8L3N0cmluZz4KCTxrZXk+Y29tLmFwcGxlLmRldmVsb3Blci5hdXRoZW50aWNhdGlvbi1zZXJ2aWNlcy5hdXRvZmlsbC1jcmVkZW50aWFsLXByb3ZpZGVyPC9rZXk+Cgk8dHJ1ZS8+Cgk8a2V5PmNvbS5hcHBsZS5zZWN1cml0eS5hcHBsaWNhdGlvbi1ncm91cHM8L2tleT4KCTxhcnJheT4KCQk8c3RyaW5nPmdyb3VwLmNvbS5rZWVwYXNzaXVtPC9zdHJpbmc+Cgk8L2FycmF5PgoJPGtleT5rZXljaGFpbi1hY2Nlc3MtZ3JvdXBzPC9rZXk+Cgk8YXJyYXk+CgkJPHN0cmluZz5UUk9MTC5jb20ua2VlcGFzc2l1bS5TaGFyZWRJdGVtczwvc3RyaW5nPgoJPC9hcnJheT4KPC9kaWN0Pgo8L3BsaXN0Pg==' | base64 -D > appex.entitlements
 
@@ -78,39 +105,113 @@ jobs:
           echo '--- appex.entitlements ---'
           cat appex.entitlements
 
-          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/Info.plist"
-          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex/Info.plist" || true
-          /usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP_PATH/Info.plist" || true
+          APP_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP_PATH/Info.plist")
+          APPEX_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APPEX_PATH/Info.plist")
+          APPEX_POINT=$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionPointIdentifier' "$APPEX_PATH/Info.plist")
+          APP_VER=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Info.plist")
+          APP_BUILD=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP_PATH/Info.plist")
+          MIN_OS=$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APP_PATH/Info.plist")
+          APPEX_MIN_OS=$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' "$APPEX_PATH/Info.plist" 2>/dev/null || echo unknown)
+          echo "APP_ID=$APP_ID"
+          echo "APPEX_ID=$APPEX_ID"
+          echo "APPEX_POINT=$APPEX_POINT"
+          echo "APP_VER=$APP_VER APP_BUILD=$APP_BUILD MIN_OS=$MIN_OS APPEX_MIN_OS=$APPEX_MIN_OS"
 
-          # Official-like packaging extras
+          # Hard reject wrong branch / wrong MinOS (crash on iOS 16 was exactly this)
+          test "$APP_ID" = "com.keepassium.ios.pro"
+          test "$APPEX_ID" = "com.keepassium.ios.pro.KeePassium-AutoFill"
+          test "$APP_VER" = "1.53"
+          test "$APP_BUILD" = "154"
+          test "$MIN_OS" = "15.4"
+          if [ "$APPEX_MIN_OS" != "unknown" ]; then test "$APPEX_MIN_OS" = "15.4"; fi
+          # Must be credential provider extension
+          echo "$APPEX_POINT" | grep -q 'authentication-services-credential-provider-ui'
+
           printf 'APPL????' > "$APP_PATH/PkgInfo"
           rm -rf "$APP_PATH/SC_Info" "$APP_PATH/PlugIns/"*/SC_Info "$APP_PATH/Frameworks/"*/SC_Info || true
 
-          # Nested sign order: frameworks -> appex -> app (same as Apple)
+          # Official IPA embeds SPM resource bundles in BOTH app and AutoFill:
+          #   DomainParser_DomainParser.bundle  (public_suffix_list.dat)  <-- crash without this
+          #   TPInAppReceipt_TPInAppReceipt.bundle
+          #   Zxcvbn_Zxcvbn.bundle
+          # Building with -target often skips copying these; embed manually.
+          echo '--- locate SPM resource bundles ---'
+          find "$PWD/build" "$PWD/SourcePackages" -type d \( -name 'DomainParser_DomainParser.bundle' -o -name 'TPInAppReceipt_TPInAppReceipt.bundle' -o -name 'Zxcvbn_Zxcvbn.bundle' \) 2>/dev/null | sort -u | tee /tmp/spm_bundles.txt || true
+          ls -la "$APP_PATH"/*.bundle 2>/dev/null || true
+          ls -la "$APPEX_PATH"/*.bundle 2>/dev/null || true
+
+          embed_bundle() {
+            local name="$1"
+            local dest_app="$APP_PATH/$name"
+            local dest_appex="$APPEX_PATH/$name"
+            local src
+            src="$(find "$PWD/build" "$PWD/SourcePackages" -type d -name "$name" 2>/dev/null | head -n 1 || true)"
+            if [ -z "$src" ]; then
+              # sometimes products land next to the app under Release-iphoneos
+              src="$(find "$PWD/build" -type d -name "$name" 2>/dev/null | head -n 1 || true)"
+            fi
+            if [ -z "$src" ]; then
+              echo "MISSING bundle: $name"
+              return 1
+            fi
+            echo "Embed $name from $src"
+            rm -rf "$dest_app" "$dest_appex"
+            cp -R "$src" "$dest_app"
+            cp -R "$src" "$dest_appex"
+            # resource bundles should be signed as bundles (ad-hoc)
+            codesign --force --sign - --timestamp=none "$dest_app" || true
+            codesign --force --sign - --timestamp=none "$dest_appex" || true
+          }
+
+          embed_bundle "DomainParser_DomainParser.bundle"
+          embed_bundle "TPInAppReceipt_TPInAppReceipt.bundle" || echo "WARN: TPInAppReceipt bundle missing (non-fatal for AutoFill search)"
+          embed_bundle "Zxcvbn_Zxcvbn.bundle" || echo "WARN: Zxcvbn bundle missing"
+
+          echo '--- bundles after embed ---'
+          ls -la "$APP_PATH"/*.bundle
+          ls -la "$APPEX_PATH"/*.bundle
+          test -d "$APP_PATH/DomainParser_DomainParser.bundle"
+          test -d "$APPEX_PATH/DomainParser_DomainParser.bundle"
+          # must contain public suffix list used by DomainParser
+          find "$APPEX_PATH/DomainParser_DomainParser.bundle" -type f | head -n 20
+          test -n "$(find "$APPEX_PATH/DomainParser_DomainParser.bundle" -name 'public_suffix_list.dat' | head -n 1)"
+
+          # IMPORTANT: do NOT put app entitlements on frameworks.
+          # Wrong app-id on KeePassiumLib.framework can make AutoFill fail to load.
           if [ -d "$APP_PATH/Frameworks" ]; then
             find "$APP_PATH/Frameworks" -name '*.framework' -maxdepth 1 -print0 | while IFS= read -r -d '' fw; do
-              codesign --force --sign - --entitlements app.entitlements --timestamp=none "$fw"
+              echo "Sign framework (no entitlements): $fw"
+              codesign --force --sign - --timestamp=none "$fw"
             done
           fi
-          if [ -d "$APP_PATH/PlugIns" ]; then
-            find "$APP_PATH/PlugIns" -name '*.appex' -maxdepth 1 -print0 | while IFS= read -r -d '' plugin; do
-              codesign --force --sign - --entitlements appex.entitlements --timestamp=none "$plugin"
-            done
-          fi
+
+          echo "Sign appex with autofill entitlements"
+          codesign --force --sign - --entitlements appex.entitlements --timestamp=none "$APPEX_PATH"
+
+          echo "Sign app"
           codesign --force --sign - --entitlements app.entitlements --timestamp=none "$APP_PATH"
 
           echo '--- signed app entitlements ---'
-          codesign -d --entitlements :- "$APP_PATH" | head -n 100 || true
+          codesign -d --entitlements :- "$APP_PATH" 2>/dev/null | head -n 120 || true
           echo '--- signed appex entitlements ---'
-          codesign -d --entitlements :- "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex" | head -n 100 || true
+          codesign -d --entitlements :- "$APPEX_PATH" 2>/dev/null | head -n 120 || true
+          echo '--- framework entitlements (should be empty/minimal) ---'
+          codesign -d --entitlements :- "$APP_PATH/Frameworks/KeePassiumLib.framework" 2>/dev/null | head -n 40 || true
 
-          echo '--- structure check ---'
-          ls -la "$APP_PATH" | head -n 40
-          ls -la "$APP_PATH/PlugIns" || true
-          ls -la "$APP_PATH/Frameworks" || true
+          codesign -d --entitlements :- "$APP_PATH" 2>/dev/null | grep -q 'autofill-credential-provider'
+          codesign -d --entitlements :- "$APPEX_PATH" 2>/dev/null | grep -q 'autofill-credential-provider'
+          codesign -d --entitlements :- "$APPEX_PATH" 2>/dev/null | grep -q 'group.com.keepassium'
+          codesign -d --entitlements :- "$APPEX_PATH" 2>/dev/null | grep -q 'TROLL.com.keepassium.SharedItems'
+
+          echo '--- structure ---'
+          ls -la "$APP_PATH/PlugIns"
+          ls -la "$APP_PATH/Frameworks"
           test -d "$APP_PATH/_CodeSignature"
-          test -d "$APP_PATH/PlugIns/KeePassium Pro AutoFill.appex/_CodeSignature"
+          test -d "$APPEX_PATH/_CodeSignature"
           test -d "$APP_PATH/Frameworks/KeePassiumLib.framework"
+
+          # deep verify (ad-hoc may warn; still useful)
+          codesign --verify --deep --verbose=2 "$APP_PATH" 2>&1 | tail -n 30 || true
 
           rm -rf ipa_stage
           mkdir -p ipa_stage/Payload
