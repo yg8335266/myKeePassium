@@ -1,0 +1,219 @@
+/* Title of the app history (changelog) screen */
+"[AppHistory/title]" = "Novinky";
+
+/* Hint shown when both password and key file are empty. */
+"[Database/Create] Please enter a password or choose a key file." = "Prosím, zadajte heslo alebo vyberte súbor s kľúčom.";
+
+/* Notification for business users when they set up too weak database password. */
+"[Database/Create/orgRequiresStronger]" = "Vaša organizácia vyžaduje zložitejšie heslo do databázy.";
+
+/* Note for a sample entry */
+"[Database/Create/TemplateEntry/notes] You can also store some notes, if you like." = "Tu si môžete pridať ľubovoľné poznámky, ak chcete.";
+
+/* Password for a sample entry. Translation is optional. */
+"[Database/Create/TemplateEntry/password] pa$$word" = "he$lo";
+
+/* Title for a sample entry */
+"[Database/Create/TemplateEntry/title] Sample Entry" = "Ukážkový záznam";
+
+/* User name for a sample entry. Set it to a typical person name for your language ( https://en.wikipedia.org/wiki/List_of_placeholder_names_by_language). */
+"[Database/Create/TemplateEntry/userName] john.smith" = "jan.novak";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Email" = "Email";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Finance" = "Financie";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] General" = "Všeobecné";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Internet" = "Internet";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Network" = "Siete";
+
+/* Predefined `Operating system` group in a new database */
+"[Database/Create/TemplateGroup/title] OS" = "Operačný systém";
+
+/* Confirmation message to replace an existing entry attachment with a new one. */
+"[Entry/Files/Add] Replace existing attachment?" = "Nahradiť existujúcu prílohu?";
+
+/* Explanation for replacing the only attachment of KeePass1 entry */
+"[Entry/Files/Add] This database supports only one attachment per entry, and there is already one." = "Táto databáza podporuje iba jednu prílohu na záznam. Tento záznam už prílohu obsahuje.";
+
+/* Title of a dialog for renaming an attached file */
+"[Entry/Files/Rename/title] Rename File" = "Premenovať súbor";
+
+/* Title of entry viewer's tab with files attached to the entry */
+"[Entry/Tab/Files/title]" = "Súbory";
+
+/* Title of entry viewer's tab with the entry's main information */
+"[Entry/Tab/General/title]" = "Všeobecné";
+
+/* Title of entry viewer's tab with previous revisions of the entry */
+"[Entry/Tab/History/title]" = "História";
+
+/* Title of entry viewer's tab with advanced/secondary properties */
+"[Entry/Tab/More/title]" = "Viac";
+
+/* Menu title. For example: `About KeePassium`. [appName: String] */
+"[Menu/About/title]" = "O aplikácii %@";
+
+/* Menu title: app settings */
+"[Menu/Preferences/title]" = "Nastavenia…";
+
+/* Action/button */
+"[Onboarding/AddExistingDatabase/action]" = "Pridať existujúcu databázu";
+
+/* Action/button to set up the App Protection feature. Not a call to action. */
+"[Onboarding/AppProtection/activate]" = "Zapnúť zámok";
+
+/* Text in the App Protection onboarding screen. */
+"[Onboarding/AppProtection/text1]" = "KeePassium je váš trezor. Ochrana aplikácie zaručuje, že ho môžete otvoriť len vy.";
+
+/* Title of the App Protection onboarding screen */
+"[Onboarding/AppProtection/title]" = "Iba pre vaše oči";
+
+/* Action/button to set up the Password AutoFill feature. Not a call to action. */
+"[Onboarding/AutoFill/activate]" = "Aktivovať automatické dopĺňanie";
+
+/* Text in the Password AutoFill onboarding screen. */
+"[Onboarding/AutoFill/text1]" = "Pomocou funkcie automatického vyplňovania môžete prechádzať prihlasovacie stránky jedným stlačením tlačidla.";
+
+/* Text in the Password AutoFill onboarding screen. */
+"[Onboarding/AutoFill/text2]" = "Ak chcete začať, aktivujte funkciu automatického vyplňovania hesiel v systémových nastaveniach.";
+
+/* Title of the Password AutoFill onboarding screen */
+"[Onboarding/AutoFill/title]" = "Automatické vypĺňanie hesiel";
+
+/* Action/button */
+"[Onboarding/CreateNewDatabase/action]" = "Vytvoriť novú databázu";
+
+/* Text in the Data Encryption intro screen */
+"[Onboarding/DataEncryption/text1]" = "Vaša schránka je zašifrovaná databáza.";
+
+/* Text in the Data Encryption intro screen */
+"[Onboarding/DataEncryption/text2]" = "Databázy môžete uchovávať v obľúbenom cloude alebo lokálne v zariadení.";
+
+/* Title of the Data Encryption intro screen */
+"[Onboarding/DataEncryption/title]" = "Šifrovanie údajov";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text1]" = "KeePassium uchováva vaše heslá a ďalšie citlivé informácie bezpečne zašifrované.";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text2]" = "Nie sú tu žiadne reklamy ani sledovanie.";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text3]" = "Nič o vás nevieme.";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text4]" = "Vaše údaje patria vám.";
+
+/* Title of the introductory onboarding screen. */
+"[Onboarding/Intro/title]" = "Vitajte";
+
+/* Text in the Security intro screen */
+"[Onboarding/Security/text1]" = "Vaše informácie sú zašifrované v bezpečnej schránke (databáze). Bezpečnostné schránky sú uložené v trezore (KeePassium).";
+
+/* Text in the Security intro screen */
+"[Onboarding/Security/text2]" = "Trezor a bezpečnostné schránky majú rôzne kľúče a poznáte ich len vy.";
+
+/* Title of the Security intro screen */
+"[Onboarding/Security/title]" = "Maximálna bezpečnosť";
+
+/* Action to skip selected item/items in future password audits. */
+"[PasswordAudit/Action/Exclude]" = "Vylúčiť z auditu";
+
+/* Status message: password audit in progress */
+"[PasswordAudit/Auditing/status]" = "Auditovanie hesiel";
+
+/* Error message after a failed password audit request [message: String]. */
+"[PasswordAudit/Error/text]" = "Pri komunikácii so službou HIBP sa vyskytla chyba. %@";
+
+/* Description of the password audit results, where a number appears next to each password. */
+"[PasswordAudit/ExposureCount/description]" = "Číslo ukazuje, koľkokrát bolo heslo nájdené pri známych únikoch údajov.";
+
+/* Description of the Password Audit function. */
+"[PasswordAudit/Intro/text]" = "Audit hesiel kontroluje bezpečným a privátnym spôsobom vaše heslá oproti online databáze uniknutých hesiel.";
+
+/* Result of a password audit. */
+"[PasswordAudit/Results/allGood]" = "Dobré správy! Žiadne z vašich hesiel sa neobjavilo v známych únikoch údajov.";
+
+/* Title of a list with passwords that are known to have been exposed in online breaches. */
+"[PasswordAudit/Results/title]" = "Prelomené heslá";
+
+/* Action/button: intiate password audit */
+"[PasswordAudit/Start/action]" = "Spustiť Audit";
+
+/* Title of a screen to check which passwords are known to be compromised. */
+"[PasswordAudit/title]" = "Audit Hesiel";
+
+/* Menu action to add a user-provided word list file to the app. */
+"[PasswordGenerator/Wordlist/Import/menuAction]" = "Importovať zoznam…";
+
+/* Password quality description. For example: `Password quality: Weak`. [level: String] */
+"[PasswordQuality/description]" = "Kvalita hesla: %@";
+
+/* Good password quality */
+"[PasswordQuality/Level] Good" = "Dobré";
+
+/* Very good password quality */
+"[PasswordQuality/Level] Very good" = "Veľmi dobré";
+
+/* Very weak password quality */
+"[PasswordQuality/Level] Very weak" = "Veľmi slabé";
+
+/* Weak password quality */
+"[PasswordQuality/Level] Weak" = "Slabé";
+
+/* Password quality description. Note the tilda that refers to an estimated/approximate value. For example: `Very good (~123 bits of entropy)`. [level: String, formattedBitCount: String] */
+"[PasswordQuality/LevelWithApproximateEntropy/description]" = "%1$@ (~%2$@ entropie)";
+
+/* Password quality description. For example: `Very good (234 bits of entropy)`. [level: String, formattedBitCount: String] */
+"[PasswordQuality/LevelWithEntropy/description]" = "%1$@ (%2$@ entropie)";
+
+/* Action/button to make password visible as plain-text */
+"[ProtectedTextField] Show Password" = "Zobraziť heslo";
+
+/* Title of the confirmation dialog for `Delete` action for several items */
+"[Selection/Delete/confirmation]" = "Odstrániť výber?";
+
+/* Title of the confirmation dialog for `Exclude from audit` action for several items */
+"[Selection/ExcludeFromAudit/confirmation]" = "Vylúčiť výber z auditu hesiel?";
+
+/* Action/button to create a new item tag */
+"[Tags/Create/action]" = "Vytvoriť štítok";
+
+/* Call to action/hint inside a text input */
+"[Tags/Create/placeholder]" = "Zadajte názov štítku";
+
+/* Title of the tag creation dialog */
+"[Tags/Create/title]" = "Nový štítok";
+
+/* Question to confirm global deletion */
+"[Tags/Delete/Confirm/message]" = "Vymazať tento štítok zo všetkých skupín a záznamov?";
+
+/* Title of a dialog for editing a tag */
+"[Tags/Edit/title]" = "Upraviť štítok";
+
+/* Status message with a call to action */
+"[Tags/None/placeholder]" = "V databáze nie sú žiadne štítky, pridajte ich.";
+
+/* Status message: tag search result is empty */
+"[Tags/Search/emptyResult]" = "Nenašli sa žiadne vhodné štítky.";
+
+/* Title of a list with all the tags existing in the database. */
+"[Tags/Section/All]" = "Všetky štítky";
+
+/* Title of a list with tags used by parent groups. */
+"[Tags/Section/Inherited]" = "Zdedené štítky";
+
+/* Title of a list with tags chosen by the user for a specific entry or group. */
+"[Tags/Section/Selected]" = "Vybrané štítky";
+
+/* Title: the number of times a tag is encountered in the database. */
+"[Tags/UsageCount/title]" = "Počet použití";
+

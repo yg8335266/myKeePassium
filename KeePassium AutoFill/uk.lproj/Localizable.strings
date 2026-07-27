@@ -1,0 +1,51 @@
+/* An identifier of the app that called AutoFill. The term is intentionally similar to https://ru.wikipedia.org/wiki/Caller_ID. [callerID: String] */
+"[AutoFill/Search/callerID]" = "Caller ID: %@";
+
+/* No comment provided by engineer. */
+"[AutoFill/Setup/footer]" = "Автозаповнення не може автоматично відкривати файли, котрі вже додані в основну програму.\n\nЧому? З точки зору системи, Автозаповнення - це окремий додаток, незалежне від основного. З метою безпеки, додаток не може просто так відкривати файли в інших додатках, якщо тільки користувач сам не зв'яже ці файли з даним додатком. Таким чином, система гарантує, що додатки можуть працювати тільки з кількома спеціально обраними файлами.\n\nВ результаті і Автозаповнення, і основний додаток повинні отримати \"окремі запрошення\" для роботи з кожним зовнішнім файлом. На щастя, ця процедура потрібна тільки один раз.";
+
+/* Must match Apple's translation, as found in iOS 15 Settings → Passwords → AutoFill Passwords. If unsure, leave untranslated. */
+"[AutoFill/Setup/UncheckKeychain/allowFillingFrom]" = "Дозволити заповнення з:";
+
+/* Call to action: deselect the `Keychain` option. Keychain is a glossary term. */
+"[AutoFill/Setup/UncheckKeychain/callToAction]" = "Зняти позначку зі Зв’язки ключів";
+
+/* Instruction to deselect the `Keychain` option. Keychain is a glossary term. */
+"[AutoFill/Setup/UncheckKeychain/message]" = "Щоб зробити KeyPassium менеджером паролів за замовчуванням, зніміть позначку зі Зв’язки ключів.";
+
+/* Must match Apple's translation, as found in iOS 17 Settings → Passwords → Password Options. If unsure, leave untranslated. */
+"[AutoFill/Setup/UncheckKeychain/usePasswordsAndPasskeysFrom]" = "Використовувати паролі та ключі допуску від:";
+
+/* Apple Keychain software; is a glossary term. */
+"[Generic/Keychain/title]" = "Зв'язка ключів";
+
+/* Menu action to add a user-provided word list file to the app. */
+"[PasswordGenerator/Wordlist/Import/menuAction]" = "Імпортувати список слів…";
+
+/* Password quality description. For example: `Password quality: Weak`. [level: String] */
+"[PasswordQuality/description]" = "Якість пароля: %@";
+
+/* Good password quality */
+"[PasswordQuality/Level] Good" = "Хороший";
+
+/* Very good password quality */
+"[PasswordQuality/Level] Very good" = "Дуже хороший";
+
+/* Very weak password quality */
+"[PasswordQuality/Level] Very weak" = "Дуже слабкий";
+
+/* Weak password quality */
+"[PasswordQuality/Level] Weak" = "Слабкий";
+
+/* Password quality description. Note the tilda that refers to an estimated/approximate value. For example: `Very good (~123 bits of entropy)`. [level: String, formattedBitCount: String] */
+"[PasswordQuality/LevelWithApproximateEntropy/description]" = "%1$@ (~%2$@ ентропії)";
+
+/* Password quality description. For example: `Very good (234 bits of entropy)`. [level: String, formattedBitCount: String] */
+"[PasswordQuality/LevelWithEntropy/description]" = "%1$@ (%2$@ ентропії)";
+
+/* Action/button to make password visible as plain-text */
+"[ProtectedTextField] Show Password" = "Показати пароль";
+
+/* Call to action, invites the user to enable the Quick AutoFill feature */
+"[QuickAutoFill/Activate/callToAction]" = "Увімкніть швидке автозаповнення";
+

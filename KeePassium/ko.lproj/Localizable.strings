@@ -1,0 +1,72 @@
+/* Title of the app history (changelog) screen */
+"[AppHistory/title]" = "변경 사항";
+
+/* Hint shown when both password and key file are empty. */
+"[Database/Create] Please enter a password or choose a key file." = "패스워드를 입력하거나 키 파일을 선택하세요.";
+
+/* Note for a sample entry */
+"[Database/Create/TemplateEntry/notes] You can also store some notes, if you like." = "원하는 경우 메모를 추가하실 수 있습니다.";
+
+/* Password for a sample entry. Translation is optional. */
+"[Database/Create/TemplateEntry/password] pa$$word" = "pa$$word";
+
+/* Title for a sample entry */
+"[Database/Create/TemplateEntry/title] Sample Entry" = "예시 항목";
+
+/* User name for a sample entry. Set it to a typical person name for your language ( https://en.wikipedia.org/wiki/List_of_placeholder_names_by_language). */
+"[Database/Create/TemplateEntry/userName] john.smith" = "홍길동";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Email" = "이메일";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Finance" = "금융";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] General" = "일반";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Internet" = "인터넷";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Network" = "네트워크";
+
+/* Predefined `Operating system` group in a new database */
+"[Database/Create/TemplateGroup/title] OS" = "OS";
+
+/* Confirmation message to replace an existing entry attachment with a new one. */
+"[Entry/Files/Add] Replace existing attachment?" = "기존 첨부 파일을 교체하시겠습니까?";
+
+/* Explanation for replacing the only attachment of KeePass1 entry */
+"[Entry/Files/Add] This database supports only one attachment per entry, and there is already one." = "이 데이터베이스는 항목 당 1개의 첨부 파일만 지원하지만, 첨부 파일이 이미 존재합니다.";
+
+/* Title of a dialog for renaming an attached file */
+"[Entry/Files/Rename/title] Rename File" = "파일 이름 변경";
+
+/* Title of entry viewer's tab with files attached to the entry */
+"[Entry/Tab/Files/title]" = "파일";
+
+/* Title of entry viewer's tab with the entry's main information */
+"[Entry/Tab/General/title]" = "일반";
+
+/* Title of entry viewer's tab with previous revisions of the entry */
+"[Entry/Tab/History/title]" = "기록";
+
+/* Menu title. For example: `About KeePassium`. [appName: String] */
+"[Menu/About/title]" = "%@ 소개";
+
+/* Menu title: app settings */
+"[Menu/Preferences/title]" = "설정…";
+
+/* Action/button */
+"[Onboarding/AddExistingDatabase/action]" = "기존 데이터베이스 추가";
+
+/* Action/button to set up the App Protection feature. Not a call to action. */
+"[Onboarding/AppProtection/activate]" = "앱 잠금 활성화";
+
+/* Action/button */
+"[Onboarding/CreateNewDatabase/action]" = "새로운 데이터베이스 생성";
+
+/* Action/button to make password visible as plain-text */
+"[ProtectedTextField] Show Password" = "패스워드 보이기";
+

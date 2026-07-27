@@ -1,0 +1,69 @@
+/* Title of the app history (changelog) screen */
+"[AppHistory/title]" = "Neler Değişti?";
+
+/* Hint shown when both password and key file are empty. */
+"[Database/Create] Please enter a password or choose a key file." = "Lütfen bir şifre girin ya da anahtar dosya seçin.";
+
+/* Note for a sample entry */
+"[Database/Create/TemplateEntry/notes] You can also store some notes, if you like." = "İsterseniz buraya birkaç not da alabilirsiniz.";
+
+/* Password for a sample entry. Translation is optional. */
+"[Database/Create/TemplateEntry/password] pa$$word" = "Şifre $word";
+
+/* Title for a sample entry */
+"[Database/Create/TemplateEntry/title] Sample Entry" = "Örnek Girdi";
+
+/* User name for a sample entry. Set it to a typical person name for your language ( https://en.wikipedia.org/wiki/List_of_placeholder_names_by_language). */
+"[Database/Create/TemplateEntry/userName] john.smith" = "mehmet.yildiz";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Email" = "e-mail";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Finance" = "Finans";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] General" = "Genel";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Internet" = "İnternet";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Network" = "Ağ";
+
+/* Predefined `Operating system` group in a new database */
+"[Database/Create/TemplateGroup/title] OS" = "İşletim Sistemi";
+
+/* Confirmation message to replace an existing entry attachment with a new one. */
+"[Entry/Files/Add] Replace existing attachment?" = "Mevcut dosyanın yerine yapıştırılsın mı?";
+
+/* Explanation for replacing the only attachment of KeePass1 entry */
+"[Entry/Files/Add] This database supports only one attachment per entry, and there is already one." = "Bu veritabanı girdi başına sadece bir dosya eklemeye izin veriyor, daha fazla eklenemez.";
+
+/* Title of a dialog for renaming an attached file */
+"[Entry/Files/Rename/title] Rename File" = "Yeniden Adlandır";
+
+/* Title of entry viewer's tab with files attached to the entry */
+"[Entry/Tab/Files/title]" = "Dosyalar";
+
+/* Title of entry viewer's tab with the entry's main information */
+"[Entry/Tab/General/title]" = "Genel";
+
+/* Title of entry viewer's tab with previous revisions of the entry */
+"[Entry/Tab/History/title]" = "Tarihçe";
+
+/* Menu title: app settings */
+"[Menu/Preferences/title]" = "Tercihler…";
+
+/* Action/button */
+"[Onboarding/AddExistingDatabase/action]" = "Varolan Bir Veritabanını Ekle";
+
+/* Action/button to set up the App Protection feature. Not a call to action. */
+"[Onboarding/AppProtection/activate]" = "Uygulama kilidini etkinleştir";
+
+/* Action/button */
+"[Onboarding/CreateNewDatabase/action]" = "Yeni Bir Veritabanı Oluşturun";
+
+/* Action/button to make password visible as plain-text */
+"[ProtectedTextField] Show Password" = "Şifreyi Göster";
+

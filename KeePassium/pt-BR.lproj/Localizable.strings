@@ -1,0 +1,219 @@
+/* Title of the app history (changelog) screen */
+"[AppHistory/title]" = "Novidades";
+
+/* Hint shown when both password and key file are empty. */
+"[Database/Create] Please enter a password or choose a key file." = "Por favor, insira uma senha ou escolha um arquivo de chave.";
+
+/* Notification for business users when they set up too weak database password. */
+"[Database/Create/orgRequiresStronger]" = "Sua organização requer uma senha de banco de dados mais complexa.";
+
+/* Note for a sample entry */
+"[Database/Create/TemplateEntry/notes] You can also store some notes, if you like." = "Você também pode armazenar algumas anotações, se quiser.";
+
+/* Password for a sample entry. Translation is optional. */
+"[Database/Create/TemplateEntry/password] pa$$word" = "senh4";
+
+/* Title for a sample entry */
+"[Database/Create/TemplateEntry/title] Sample Entry" = "Exemplo de entrada";
+
+/* User name for a sample entry. Set it to a typical person name for your language ( https://en.wikipedia.org/wiki/List_of_placeholder_names_by_language). */
+"[Database/Create/TemplateEntry/userName] john.smith" = "jose.silva";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Email" = "E-mail";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Finance" = "Finanças";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] General" = "Geral";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Internet" = "Internet";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Network" = "Rede";
+
+/* Predefined `Operating system` group in a new database */
+"[Database/Create/TemplateGroup/title] OS" = "Sistema operacional";
+
+/* Confirmation message to replace an existing entry attachment with a new one. */
+"[Entry/Files/Add] Replace existing attachment?" = "Substituir o anexo existente?";
+
+/* Explanation for replacing the only attachment of KeePass1 entry */
+"[Entry/Files/Add] This database supports only one attachment per entry, and there is already one." = "Esse banco de dados suporta apenas um anexo por entrada, e esta já tem um.";
+
+/* Title of a dialog for renaming an attached file */
+"[Entry/Files/Rename/title] Rename File" = "Renomear arquivo";
+
+/* Title of entry viewer's tab with files attached to the entry */
+"[Entry/Tab/Files/title]" = "Anexos";
+
+/* Title of entry viewer's tab with the entry's main information */
+"[Entry/Tab/General/title]" = "Geral";
+
+/* Title of entry viewer's tab with previous revisions of the entry */
+"[Entry/Tab/History/title]" = "Histórico";
+
+/* Title of entry viewer's tab with advanced/secondary properties */
+"[Entry/Tab/More/title]" = "Mais";
+
+/* Menu title. For example: `About KeePassium`. [appName: String] */
+"[Menu/About/title]" = "Sobre %@";
+
+/* Menu title: app settings */
+"[Menu/Preferences/title]" = "Preferências…";
+
+/* Action/button */
+"[Onboarding/AddExistingDatabase/action]" = "Adicionar banco de dados existente";
+
+/* Action/button to set up the App Protection feature. Not a call to action. */
+"[Onboarding/AppProtection/activate]" = "Ative a proteção do aplicativo";
+
+/* Text in the App Protection onboarding screen. */
+"[Onboarding/AppProtection/text1]" = "O KeePassium é o seu cofre. A proteção do aplicativo garante que somente você possa abri-lo.";
+
+/* Title of the App Protection onboarding screen */
+"[Onboarding/AppProtection/title]" = "Somente para seus olhos";
+
+/* Action/button to set up the Password AutoFill feature. Not a call to action. */
+"[Onboarding/AutoFill/activate]" = "Ativar Preenchimento Automático";
+
+/* Text in the Password AutoFill onboarding screen. */
+"[Onboarding/AutoFill/text1]" = "Com o Preenchimento automático, você poderá abrir páginas de login com um único pressionar de botão.";
+
+/* Text in the Password AutoFill onboarding screen. */
+"[Onboarding/AutoFill/text2]" = "Para iniciar, ative o Preenchimento Automático de Senha nas configurações do sistema.";
+
+/* Title of the Password AutoFill onboarding screen */
+"[Onboarding/AutoFill/title]" = "Preenchimento automático de senha";
+
+/* Action/button */
+"[Onboarding/CreateNewDatabase/action]" = "Criar novo banco de dados";
+
+/* Text in the Data Encryption intro screen */
+"[Onboarding/DataEncryption/text1]" = "Sua caixa segura é um banco de dados criptografado.";
+
+/* Text in the Data Encryption intro screen */
+"[Onboarding/DataEncryption/text2]" = "Você pode manter bancos de dados em sua nuvem favorita ou localmente no dispositivo.";
+
+/* Title of the Data Encryption intro screen */
+"[Onboarding/DataEncryption/title]" = "Criptografia de dados";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text1]" = "O KeePassium mantém suas senhas e outras informações confidenciais criptografadas com segurança.";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text2]" = "Não há anúncios nem rastreamento.";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text3]" = "Não sabemos nada sobre você.";
+
+/* Text in the introductory onboarding screen. */
+"[Onboarding/Intro/text4]" = "Seus dados pertencem a você.";
+
+/* Title of the introductory onboarding screen. */
+"[Onboarding/Intro/title]" = "Bem-vindo";
+
+/* Text in the Security intro screen */
+"[Onboarding/Security/text1]" = "Sua informação é criptografada em uma caixa segura (banco de dados). Caixas seguras são armazenadas em um cofre (KeePassium).";
+
+/* Text in the Security intro screen */
+"[Onboarding/Security/text2]" = "O cofre e as caixas seguras têm chaves diferentes e só você as conhecerá.";
+
+/* Title of the Security intro screen */
+"[Onboarding/Security/title]" = "Segurança máxima";
+
+/* Action to skip selected item/items in future password audits. */
+"[PasswordAudit/Action/Exclude]" = "Retirar da auditoria";
+
+/* Status message: password audit in progress */
+"[PasswordAudit/Auditing/status]" = "Auditando senhas";
+
+/* Error message after a failed password audit request [message: String]. */
+"[PasswordAudit/Error/text]" = "Houve um problema de comunicação com o serviço HIBP. %@";
+
+/* Description of the password audit results, where a number appears next to each password. */
+"[PasswordAudit/ExposureCount/description]" = "O número indica quantas vezes cada senha apareceu em vazamentos de dados conhecidos.";
+
+/* Description of the Password Audit function. */
+"[PasswordAudit/Intro/text]" = "A auditoria de senhas verifica se alguma delas consta em um banco de dados on-line de vazamentos conhecidos, de forma segura e privada.\n\nKeePassium enviará códigos calculados a partir das senhas — um tipo de checksum parcial — para o serviço [Have I Been Pwned](https://haveibeenpwned.com). O serviço responderá com informações detalhadas sobre senhas vazadas com checksums similares. KeePassium, então, comparará localmente no seu dispositivo essas informações com as suas senhas para identificar aquelas comprometidas.\n\nAs suas senhas jamais são compartilhadas com o serviço on-line.\n[Saiba mais…](%@)";
+
+/* Result of a password audit. */
+"[PasswordAudit/Results/allGood]" = "Ótimas notícias! Nenhuma das suas senhas apareceu em vazamentos de dados conhecidos.";
+
+/* Title of a list with passwords that are known to have been exposed in online breaches. */
+"[PasswordAudit/Results/title]" = "Senhas comprometidas";
+
+/* Action/button: intiate password audit */
+"[PasswordAudit/Start/action]" = "Começar auditoria";
+
+/* Title of a screen to check which passwords are known to be compromised. */
+"[PasswordAudit/title]" = "Auditar senhas";
+
+/* Menu action to add a user-provided word list file to the app. */
+"[PasswordGenerator/Wordlist/Import/menuAction]" = "Importar lista de palavras...";
+
+/* Password quality description. For example: `Password quality: Weak`. [level: String] */
+"[PasswordQuality/description]" = "Qualidade da senha: %@";
+
+/* Good password quality */
+"[PasswordQuality/Level] Good" = "boa";
+
+/* Very good password quality */
+"[PasswordQuality/Level] Very good" = "muito boa";
+
+/* Very weak password quality */
+"[PasswordQuality/Level] Very weak" = "muito fraca";
+
+/* Weak password quality */
+"[PasswordQuality/Level] Weak" = "fraca";
+
+/* Password quality description. Note the tilda that refers to an estimated/approximate value. For example: `Very good (~123 bits of entropy)`. [level: String, formattedBitCount: String] */
+"[PasswordQuality/LevelWithApproximateEntropy/description]" = "%1$@ (~%2$@ de entropia)";
+
+/* Password quality description. For example: `Very good (234 bits of entropy)`. [level: String, formattedBitCount: String] */
+"[PasswordQuality/LevelWithEntropy/description]" = "%1$@ (%2$@ de entropia)";
+
+/* Action/button to make password visible as plain-text */
+"[ProtectedTextField] Show Password" = "Mostrar senha";
+
+/* Title of the confirmation dialog for `Delete` action for several items */
+"[Selection/Delete/confirmation]" = "Apagar seleção?";
+
+/* Title of the confirmation dialog for `Exclude from audit` action for several items */
+"[Selection/ExcludeFromAudit/confirmation]" = "Não auditar as senhas selecionadas?";
+
+/* Action/button to create a new item tag */
+"[Tags/Create/action]" = "Criar etiqueta";
+
+/* Call to action/hint inside a text input */
+"[Tags/Create/placeholder]" = "Inserir o nome da etiqueta";
+
+/* Title of the tag creation dialog */
+"[Tags/Create/title]" = "Nova etiqueta";
+
+/* Question to confirm global deletion */
+"[Tags/Delete/Confirm/message]" = "Apagar esta etiqueta de todos os grupos e entradas?";
+
+/* Title of a dialog for editing a tag */
+"[Tags/Edit/title]" = "Editar etiqueta";
+
+/* Status message with a call to action */
+"[Tags/None/placeholder]" = "Não há etiquetas no banco de dados, adicione algumas.";
+
+/* Status message: tag search result is empty */
+"[Tags/Search/emptyResult]" = "Nenhuma etiqueta adequada encontrada.";
+
+/* Title of a list with all the tags existing in the database. */
+"[Tags/Section/All]" = "Todas as etiquetas";
+
+/* Title of a list with tags used by parent groups. */
+"[Tags/Section/Inherited]" = "Etiquetas herdadas";
+
+/* Title of a list with tags chosen by the user for a specific entry or group. */
+"[Tags/Section/Selected]" = "Etiquetas selecionadas";
+
+/* Title: the number of times a tag is encountered in the database. */
+"[Tags/UsageCount/title]" = "Contagem de uso";
+

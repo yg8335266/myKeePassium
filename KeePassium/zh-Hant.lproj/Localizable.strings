@@ -1,0 +1,75 @@
+/* Title of the app history (changelog) screen */
+"[AppHistory/title]" = "更新了什麼";
+
+/* Hint shown when both password and key file are empty. */
+"[Database/Create] Please enter a password or choose a key file." = "請輸入一個密碼或者選擇一個金鑰檔案。";
+
+/* Note for a sample entry */
+"[Database/Create/TemplateEntry/notes] You can also store some notes, if you like." = "如果您願意, 您也可以填寫一些備註。";
+
+/* Password for a sample entry. Translation is optional. */
+"[Database/Create/TemplateEntry/password] pa$$word" = "pa$$word";
+
+/* Title for a sample entry */
+"[Database/Create/TemplateEntry/title] Sample Entry" = "項目樣本";
+
+/* User name for a sample entry. Set it to a typical person name for your language ( https://en.wikipedia.org/wiki/List_of_placeholder_names_by_language). */
+"[Database/Create/TemplateEntry/userName] john.smith" = "小明";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Email" = "電子郵件";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Finance" = "財務";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] General" = "一般";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Internet" = "網際網路";
+
+/* Predefined group in a new database */
+"[Database/Create/TemplateGroup/title] Network" = "網路";
+
+/* Predefined `Operating system` group in a new database */
+"[Database/Create/TemplateGroup/title] OS" = "作業系統";
+
+/* Confirmation message to replace an existing entry attachment with a new one. */
+"[Entry/Files/Add] Replace existing attachment?" = "替換現有的附件？";
+
+/* Explanation for replacing the only attachment of KeePass1 entry */
+"[Entry/Files/Add] This database supports only one attachment per entry, and there is already one." = "此資料庫每個項目僅支持一個附件, 且它已經有一個附件了。";
+
+/* Title of a dialog for renaming an attached file */
+"[Entry/Files/Rename/title] Rename File" = "重新命名檔案";
+
+/* Title of entry viewer's tab with files attached to the entry */
+"[Entry/Tab/Files/title]" = "檔案";
+
+/* Title of entry viewer's tab with the entry's main information */
+"[Entry/Tab/General/title]" = "一般";
+
+/* Title of entry viewer's tab with previous revisions of the entry */
+"[Entry/Tab/History/title]" = "歷史";
+
+/* Menu title. For example: `About KeePassium`. [appName: String] */
+"[Menu/About/title]" = "關於 %@";
+
+/* Menu title: app settings */
+"[Menu/Preferences/title]" = "偏好設定…";
+
+/* Action/button */
+"[Onboarding/AddExistingDatabase/action]" = "添加現有資料庫";
+
+/* Action/button to set up the App Protection feature. Not a call to action. */
+"[Onboarding/AppProtection/activate]" = "啟用應用解鎖密碼";
+
+/* Action/button to set up the Password AutoFill feature. Not a call to action. */
+"[Onboarding/AutoFill/activate]" = "啟用自動填寫密碼";
+
+/* Action/button */
+"[Onboarding/CreateNewDatabase/action]" = "新建資料庫";
+
+/* Action/button to make password visible as plain-text */
+"[ProtectedTextField] Show Password" = "顯示密碼";
+
